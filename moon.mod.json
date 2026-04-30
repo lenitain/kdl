@@ -5,8 +5,17 @@
     "moonbitlang/x": "0.4.43"
   },
   "readme": "README.mbt.md",
-  "repository": "",
+  "repository": "https://github.com/lenitain/kdl",
   "license": "Apache-2.0",
-  "keywords": [],
-  "description": ""
+  "keywords": [
+    "kdl",
+    "parser",
+    "formatter",
+    "query",
+    "kql",
+    "schema",
+    "configuration",
+    "document"
+  ],
+  "description": "KDL document language parser, formatter, query engine, and schema validation library for MoonBit"
 }
