@@ -19,7 +19,7 @@
 - [ ] `KdlDocument`: 根文档 / 子节点块
 
 ### Phase 1.2: 错误类型
-- [ ] `KdlError` / `KdlDiagnostic`: 多错误收集, 源码位置
+- [x] `KdlError` / `KdlDiagnostic`: 多错误收集, 源码位置
 
 ## Phase 2: Tokenizer / Lexer
 - [ ] 基本的字符流处理
