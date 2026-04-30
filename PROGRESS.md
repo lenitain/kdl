@@ -167,6 +167,7 @@ Migrate from current flat structure to target structure:
 - [x] Autoformat (via format.mbt + CLI format command)
 - [x] Create `cmd/main/` CLI tool (parse, check, format)
 - [x] Complete documentation (README.mbt.md)
+- [x] Version command (reads from moon.mod.json)
 - [ ] MoonBit package publication (pending)
 
 ---
@@ -224,7 +225,7 @@ kdl/
 │   └── moon.pkg         — Schema package config ✅
 │
 ├── cmd/main/            — CLI tool ✅
-│   ├── main.mbt         — Parse/check/format subcommands ✅
+│   ├── main.mbt         — Parse/check/format/version subcommands ✅
 │   ├── main_wbtest.mbt  — Helper tests (10 tests) ✅
 │   └── moon.pkg         — Main package config ✅
 │

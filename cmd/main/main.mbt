@@ -7,6 +7,65 @@ using @lenitain/kdl {
 }
 
 ///|
+fn find_substring(haystack : String, needle : String) -> Int? {
+  let h_arr = haystack.to_array()
+  let n_arr = needle.to_array()
+  let h_len = h_arr.length()
+  let n_len = n_arr.length()
+  if n_len == 0 || n_len > h_len {
+    return None
+  }
+  let limit = h_len - n_len + 1
+  for i in 0..<limit {
+    let mut found = true
+    for j in 0..<n_len {
+      if h_arr[i + j] != n_arr[j] {
+        found = false
+        break
+      }
+    }
+    if found {
+      return Some(i)
+    }
+  }
+  None
+}
+
+///|
+fn read_version() -> String {
+  let content = @fs.read_file_to_string("moon.mod.json") catch {
+    _ => return "unknown"
+  }
+  let marker = "\"version\": \""
+  match find_substring(content, marker) {
+    None => return "unknown"
+    Some(idx) => {
+      let value_start = idx + marker.length()
+      let rest = string_sub(
+        content,
+        value_start,
+        content.length() - value_start,
+      )
+      match find_substring(rest, "\"") {
+        None => return "unknown"
+        Some(end_idx) => return string_sub(rest, 0, end_idx)
+      }
+    }
+  }
+}
+
+///|
+fn string_sub(s : String, start : Int, len : Int) -> String {
+  let arr = s.to_array()
+  let end = if start + len > arr.length() { arr.length() } else { start + len }
+  let mut result = ""
+  for i in start..<end {
+    result = result + arr[i].to_string()
+  }
+  result
+}
+
+///|
 fn show_usage(program : String) -> Unit {
   println("KDL CLI - Parse, validate, and format KDL files")
   println("")
@@ -26,6 +85,7 @@ fn show_usage(program : String) -> Unit {
     program +
     " format <file>         Format a KDL file and print to stdout",
   )
+  println("  " + program + " version               Show version information")
   println("  " + program + " help                  Show this help message")
 }
 
@@ -220,6 +280,7 @@ fn main {
   let cmd = args[1]
   match cmd {
     "help" | "--help" | "-h" => show_usage(program)
+    "version" | "--version" | "-v" => println(read_version())
     "parse" =>
       if args.length() < 3 {
         println("Error: parse requires a file argument")
