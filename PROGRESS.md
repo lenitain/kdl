@@ -70,7 +70,7 @@ Migrate from current flat structure to target structure:
 | Phase 5 | Create `format.mbt` (root directory) | ✅ Completed |
 | Phase 6 | Create `query/` subpackage | ✅ Completed |
 | Phase 7 | Create `schema/` subpackage | ✅ Completed (248 tests) |
-| Phase 8 | Create `cmd/main/` CLI tool | ✅ Completed |
+| Phase 8 | Create `cmd/main/` CLI tool + docs | ✅ Completed (258 tests) |
 
 ---
 
@@ -163,11 +163,11 @@ Migrate from current flat structure to target structure:
 - [x] Node-names/tag-names/prop-names validation
 - [x] 248 total tests passing (219 existing + 29 new schema tests)
 
-## Phase 8: Tools and Polish
-- [ ] Autoformat
+## Phase 8: Tools and Polish ✅ Completed
+- [x] Autoformat (via format.mbt + CLI format command)
 - [x] Create `cmd/main/` CLI tool (parse, check, format)
-- [ ] Complete documentation (README.mbt.md)
-- [ ] MoonBit package publication
+- [x] Complete documentation (README.mbt.md)
+- [ ] MoonBit package publication (pending)
 
 ---
 
@@ -218,8 +218,15 @@ kdl/
 │   ├── query_test.mbt   — 194 tests (tokenizer + parser + engine) ✅
 │   └── moon.pkg         — Query package config ✅
 │
-└── schema/              — Schema types and validation ✅
-    ├── schema.mbt       — Schema types + parse_schema + validate ✅
-    ├── schema_test.mbt  — Schema tests (29 tests) ✅
-    └── moon.pkg         — Schema package config ✅
+├── schema/              — Schema types and validation ✅
+│   ├── schema.mbt       — Schema types + parse_schema + validate ✅
+│   ├── schema_test.mbt  — Schema tests (29 tests) ✅
+│   └── moon.pkg         — Schema package config ✅
+│
+├── cmd/main/            — CLI tool ✅
+│   ├── main.mbt         — Parse/check/format subcommands ✅
+│   ├── main_wbtest.mbt  — Helper tests (10 tests) ✅
+│   └── moon.pkg         — Main package config ✅
+│
+└── README.mbt.md        — Documentation ✅
 ```

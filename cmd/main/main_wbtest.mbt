@@ -79,7 +79,7 @@ test "node_summary node with children" {
     child,
   ])
   let result = node_summary(node, 0)
-  assert_true(result.contains("parent (1 children)"))
+  assert_true(result.contains("parent (1 child)"))
   assert_true(result.contains("  child"))
 }
 
@@ -93,7 +93,7 @@ test "node_summary node with entries and children" {
     Some([child]),
   )
   let result = node_summary(node, 0)
-  assert_true(result.contains("a (1 entries, 1 children)"))
+  assert_true(result.contains("a (1 entry, 1 child)"))
   assert_true(result.contains("  b"))
 }
 

@@ -56,24 +56,30 @@ fn node_summary(node : KdlNode, indent : Int) -> String {
   let prefix = repeat_str("  ", indent)
   let name = node.name.value()
   let entry_count = node.entries.length()
-  let child_count = match node.children {
+  let children = match node.children {
+    Some(c) => Some(c)
+    None => None
+  }
+  let child_count = match children {
     Some(c) => c.length()
     None => 0
   }
+  let entry_label = if entry_count == 1 { "entry" } else { "entries" }
+  let child_label = if child_count == 1 { "child" } else { "children" }
   let mut result = prefix + name
   if entry_count > 0 {
-    result = result + " (" + entry_count.to_string() + " entries"
+    result = result + " (" + entry_count.to_string() + " " + entry_label
     if child_count > 0 {
-      result = result + ", " + child_count.to_string() + " children"
+      result = result + ", " + child_count.to_string() + " " + child_label
     }
     result = result + ")"
   } else if child_count > 0 {
-    result = result + " (" + child_count.to_string() + " children)"
+    result = result + " (" + child_count.to_string() + " " + child_label + ")"
   }
   if child_count > 0 {
-    match node.children {
-      Some(children) =>
-        for child in children {
+    match children {
+      Some(cs) =>
+        for child in cs {
           result = result + "\n" + node_summary(child, indent + 1)
         }
       None => ()
