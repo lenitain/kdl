@@ -1,5 +1,7 @@
 # lenitain/kdl
 
+[![mooncake](https://img.shields.io/badge/mooncake-lenitain%2Fkdl-blue)](https://mooncakes.io/docs/lenitain/kdl)
+
 A MoonBit library for parsing, formatting, querying, and validating [KDL](https://github.com/kdl-org/kdl) documents.
 
 ## Installation
