@@ -69,7 +69,7 @@ Migrate from current flat structure to target structure:
 | Phase 3 | Create `parser/` subpackage | ✅ Completed |
 | Phase 5 | Create `format.mbt` (root directory) | ✅ Completed |
 | Phase 6 | Create `query/` subpackage | ✅ Completed |
-| Phase 7 | Create `schema/` subpackage | ✅ Completed |
+| Phase 7 | Create `schema/` subpackage | ✅ Completed (248 tests) |
 | Phase 8 | Create `cmd/main/` CLI tool | ⏳ Pending |
 
 ---
@@ -143,9 +143,11 @@ Migrate from current flat structure to target structure:
 - [x] Value/property/type matching and comparison
 - [x] 194 tests passing (tokenizer + parser + engine)
 
-## Phase 7: Schema Support
+## Phase 7: Schema Support ✅ Completed
 - [x] Create `schema/` subpackage
-- [x] Schema document parsing
+- [x] Schema types: SchemaDocument, SchemaNode, SchemaProp, SchemaValue, SchemaChildren, SchemaTag, SchemaValidation, SchemaInfo, SchemaDefinitions
+- [x] Schema document parsing (`parse_schema` function)
+- [x] Spec-compliant parsing (positional values, child nodes, not properties)
 - [x] Schema validation engine (`validate` function)
 - [x] Type checking (string/number/boolean/null/integer/float)
 - [x] Enum validation
@@ -159,7 +161,7 @@ Migrate from current flat structure to target structure:
 - [x] Children validation (min/max count, other_nodes_allowed)
 - [x] Tag validation (node-level and document-level)
 - [x] Node-names/tag-names/prop-names validation
-- [x] 29 validation tests
+- [x] 248 total tests passing (219 existing + 29 new schema tests)
 
 ## Phase 8: Tools and Polish
 - [ ] Autoformat
@@ -208,11 +210,16 @@ kdl/
 │   ├── parser_test.mbt  — Parser unit tests (5 tests) ✅
 │   └── moon.pkg         — Parser package config ✅
 │
-└── query/               — KQL query engine ✅
-    ├── query_token.mbt  — KQL token types (27 variants) ✅
-    ├── query_tokenize.mbt — KQL tokenizer ✅
-    ├── query_parser.mbt — KQL parser (AST + parsing) ✅
-    ├── query_engine.mbt — Query execution engine ✅
-    ├── query_test.mbt   — 194 tests (tokenizer + parser + engine) ✅
-    └── moon.pkg         — Query package config ✅
+├── query/               — KQL query engine ✅
+│   ├── query_token.mbt  — KQL token types (27 variants) ✅
+│   ├── query_tokenize.mbt — KQL tokenizer ✅
+│   ├── query_parser.mbt — KQL parser (AST + parsing) ✅
+│   ├── query_engine.mbt — Query execution engine ✅
+│   ├── query_test.mbt   — 194 tests (tokenizer + parser + engine) ✅
+│   └── moon.pkg         — Query package config ✅
+│
+└── schema/              — Schema types and validation ✅
+    ├── schema.mbt       — Schema types + parse_schema + validate ✅
+    ├── schema_test.mbt  — Schema tests (29 tests) ✅
+    └── moon.pkg         — Schema package config ✅
 ```
