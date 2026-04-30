@@ -67,7 +67,7 @@ Migrate from current flat structure to target structure:
 | Phase 2 | Create `internal/tokenize/` subpackage | ✅ Completed |
 | Phase 3 | Create `parser/` subpackage | ✅ Completed |
 | Phase 5 | Create `format.mbt` (root directory) | ✅ Completed |
-| Phase 6 | Create `query/` subpackage | ⏳ Pending |
+| Phase 6 | Create `query/` subpackage | ✅ Completed |
 | Phase 7 | Create `schema/` subpackage | ⏳ Pending |
 | Phase 8 | Create `cmd/main/` CLI tool | ⏳ Pending |
 
@@ -96,7 +96,8 @@ Migrate from current flat structure to target structure:
 - [x] Slashdash `/-` comments
 - [x] Line continuation `\` + newline
 - [x] Disallowed character detection (NUL, control characters, BIDI, BOM handling)
-- [x] Lexer unit tests (66 tests, 59 passed, 7 failed - number parsing to be implemented)
+- [x] Number parsing: decimal/hex/octal/binary integers + floats + scientific notation
+- [x] Lexer unit tests (66 tests, all passing)
 
 ## Phase 3: Parser — v1 Support
 - [x] Create `parser/` subpackage (parser.mbt + moon.pkg)
@@ -133,12 +134,13 @@ Migrate from current flat structure to target structure:
 - [x] Serialization with indentation
 - [x] Optional formatting configuration (indent size, etc.)
 
-## Phase 6: Query (KQL)
-- [ ] Create `query/` subpackage
-- [ ] KQL Tokenizer
-- [ ] KQL Parser (selector + matcher)
-- [ ] Document query engine: child, descendant, sibling selectors
-- [ ] Value/property/type matching and comparison
+## Phase 6: Query (KQL) ✅ Completed
+- [x] Create `query/` subpackage
+- [x] KQL Tokenizer
+- [x] KQL Parser (selector + matcher)
+- [x] Document query engine: child, descendant, sibling selectors
+- [x] Value/property/type matching and comparison
+- [x] 194 tests passing (tokenizer + parser + engine)
 
 ## Phase 7: Schema Support
 - [ ] Create `schema/` subpackage
@@ -193,4 +195,12 @@ kdl/
     ├── parser.mbt       — v1 parsing logic ✅
     ├── parser_test.mbt  — Parser unit tests (5 tests) ✅
     └── moon.pkg         — Parser package config ✅
+
+├── query/               — KQL query engine ✅
+│   ├── query_token.mbt  — KQL token types (27 variants) ✅
+│   ├── query_tokenize.mbt — KQL tokenizer ✅
+│   ├── query_parser.mbt — KQL parser (AST + parsing) ✅
+│   ├── query_engine.mbt — Query execution engine ✅
+│   ├── query_test.mbt   — 194 tests (tokenizer + parser + engine) ✅
+│   └── moon.pkg         — Query package config ✅
 ```

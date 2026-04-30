@@ -544,8 +544,21 @@ fn Lexer::read_number(
         if num_str.length() == 0 {
           return (Err("Expected hex digits after 0x"), current)
         }
-        // Parse hex - simplified
-        return (Ok(Integer(0L)), current)
+        let mut result = 0L
+        for ch in num_str {
+          result = result * 16L
+          if ch >= '0' && ch <= '9' {
+            result = result + (ch.to_int() - '0'.to_int()).to_int64()
+          } else if ch >= 'a' && ch <= 'f' {
+            result = result + (ch.to_int() - 'a'.to_int() + 10).to_int64()
+          } else if ch >= 'A' && ch <= 'F' {
+            result = result + (ch.to_int() - 'A'.to_int() + 10).to_int64()
+          }
+        }
+        if is_negative {
+          result = -result
+        }
+        return (Ok(Integer(result)), current)
       }
       Some("o") | Some("O") => {
         let (_, new_cursor) = current.cursor.advance()
@@ -572,7 +585,15 @@ fn Lexer::read_number(
         if num_str.length() == 0 {
           return (Err("Expected octal digits after 0o"), current)
         }
-        return (Ok(Integer(0L)), current)
+        let mut result = 0L
+        for ch in num_str {
+          result = result * 8L
+          result = result + (ch.to_int() - '0'.to_int()).to_int64()
+        }
+        if is_negative {
+          result = -result
+        }
+        return (Ok(Integer(result)), current)
       }
       Some("b") | Some("B") => {
         let (_, new_cursor) = current.cursor.advance()
@@ -599,7 +620,15 @@ fn Lexer::read_number(
         if num_str.length() == 0 {
           return (Err("Expected binary digits after 0b"), current)
         }
-        return (Ok(Integer(0L)), current)
+        let mut result = 0L
+        for ch in num_str {
+          result = result * 2L
+          result = result + (ch.to_int() - '0'.to_int()).to_int64()
+        }
+        if is_negative {
+          result = -result
+        }
+        return (Ok(Integer(result)), current)
       }
       _ =>
         // Decimal number
@@ -649,6 +678,14 @@ fn Lexer::read_number(
               }
             None => ()
           }
+          // Must have at least one digit after exponent sign
+          match current.cursor.peek() {
+            Some(d) =>
+              if !is_digit(d) {
+                return (Err("Expected digit after exponent sign"), current)
+              }
+            None => return (Err("Expected digit after exponent sign"), current)
+          }
         } else {
           break
         }
@@ -660,11 +697,58 @@ fn Lexer::read_number(
     return (Err("Expected digits"), current)
   }
   if has_dot || has_exp {
-    // Parse as float - simplified
-    (Ok(Float(0.0)), current)
+    // Parse as float
+    let mut int_part = 0L
+    let mut frac_part = 0.0
+    let mut frac_divisor = 1.0
+    let mut exp_part = 0
+    let mut exp_negative = false
+    let mut phase = 0 // 0=int, 1=frac, 2=exp
+    for ch in num_str {
+      if ch == '.' {
+        phase = 1
+      } else if ch == 'e' || ch == 'E' {
+        phase = 2
+      } else if ch == '-' && phase == 2 {
+        exp_negative = true
+      } else if ch == '+' && phase == 2 {
+        // do nothing
+      } else {
+        let digit = (ch.to_int() - '0'.to_int()).to_double()
+        if phase == 0 {
+          int_part = int_part * 10L + digit.to_int64()
+        } else if phase == 1 {
+          frac_divisor = frac_divisor * 10.0
+          frac_part = frac_part + digit / frac_divisor
+        } else {
+          exp_part = exp_part * 10 + digit.to_int()
+        }
+      }
+    }
+    let mut result = int_part.to_double() + frac_part
+    let exp_val = if exp_negative { -exp_part } else { exp_part }
+    if exp_val > 0 {
+      for _ in 0..<exp_val {
+        result = result * 10.0
+      }
+    } else if exp_val < 0 {
+      for _ in 0..<-exp_val {
+        result = result / 10.0
+      }
+    }
+    if is_negative {
+      result = -result
+    }
+    (Ok(Float(result)), current)
   } else {
-    // Parse as integer - simplified
-    (Ok(Integer(0L)), current)
+    let mut result = 0L
+    for ch in num_str {
+      result = result * 10L + (ch.to_int() - '0'.to_int()).to_int64()
+    }
+    if is_negative {
+      result = -result
+    }
+    (Ok(Integer(result)), current)
   }
 }
 
