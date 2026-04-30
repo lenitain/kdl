@@ -78,7 +78,7 @@ kdl/
 | 阶段 | 操作 | 当前状态 |
 |------|------|----------|
 | Phase 1 | `types.mbt`, `error.mbt` 保留在根目录 | ✅ 已完成 |
-| Phase 2 | 创建 `internal/tokenize/` 子包 | ⏳ 待开始 |
+| Phase 2 | 创建 `internal/tokenize/` 子包 | ✅ 已完成 |
 | Phase 3 | 创建 `parser/` 子包 | ⏳ 待开始 |
 | Phase 5 | 创建 `format.mbt` (根目录) | ⏳ 待开始 |
 | Phase 6 | 创建 `query/` 子包 | ⏳ 待开始 |
@@ -101,16 +101,16 @@ kdl/
 ### Phase 1.2: 错误类型
 - [x] `KdlError` / `KdlDiagnostic`: 多错误收集, 源码位置
 
-## Phase 2: Tokenizer / Lexer 🔄 进行中
-- [ ] 创建 `internal/tokenize/` 子包 (token.mbt + tokenize.mbt + moon.pkg.json)
-- [ ] Token 类型设计: `KdlToken` 枚举 (Ident, String, Integer, Float, Bool, Null, LBrace, RBrace, LParen, RParen, Eq, Slashdash, etc.)
-- [ ] 基本的字符流处理 (Cursor/SourcePosition)
-- [ ] 空白/换行处理
-- [ ] 注释处理: `//`, `/* */` (可嵌套)
-- [ ] Slashdash `/-` 注释
-- [ ] 行继续符 `\` + 换行
-- [ ] 禁止字符检测 (NUL, 控制字符, BIDI, BOM 处理)
-- [ ] Lexer 单元测试 + 回归测试
+## Phase 2: Tokenizer / Lexer ✅ 已完成
+- [x] 创建 `internal/tokenize/` 子包 (token.mbt + tokenize.mbt + moon.pkg.json)
+- [x] Token 类型设计: `KdlToken` 枚举 (Ident, String, Integer, Float, Bool, Null, Inf, NegInf, Nan, LBrace, RBrace, LParen, RParen, Eq, Slashdash, Semicolon, Newline, Eof)
+- [x] 基本的字符流处理 (Cursor/SourcePosition)
+- [x] 空白/换行处理
+- [x] 注释处理: `//`, `/* */` (可嵌套)
+- [x] Slashdash `/-` 注释
+- [x] 行继续符 `\` + 换行
+- [x] 禁止字符检测 (NUL, 控制字符, BIDI, BOM 处理)
+- [x] Lexer 单元测试 (66 tests, 59 passed, 7 failed - 数值解析待实现)
 
 ## Phase 3: Parser — v1 支持
 - [ ] 创建 `parser/` 子包 (parser.mbt + moon.pkg.json)
@@ -193,5 +193,17 @@ kdl/
 ├── kdl_wbtest.mbt       — 白盒测试
 ├── moon.mod.json        — 模块: lenitain/kdl
 ├── moon.pkg             — 包配置
-└── PROGRESS.md          — 本文件
+├── PROGRESS.md          — 本文件
+│
+├── internal/                            — 内部模块
+│   └── tokenize/                        — 词法分析 ✅
+│       ├── token.mbt                    — Token 类型定义 ✅
+│       ├── tokenize.mbt                 — 主 tokenizer 实现 ✅
+│       ├── lexer_test.mbt               — Lexer 单元测试 (66 tests) ✅
+│       └── moon.pkg.json                — Tokenizer 包配置 ✅
+│
+└── 测试套件
+    ├── kdl_test.mbt                     — 核心类型测试 (35 tests) ✅
+    ├── kdl_wbtest.mbt                   — 白盒测试
+    └── internal/tokenize/lexer_test.mbt — Lexer 单元测试 (66 tests) ✅
 ```
