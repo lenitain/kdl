@@ -168,6 +168,7 @@ Migrate from current flat structure to target structure:
 - [x] Create `cmd/main/` CLI tool (parse, check, format)
 - [x] Complete documentation (README.mbt.md)
 - [x] Version command (reads from moon.mod.json)
+- [x] Package metadata (moon.mod.json with description, keywords, repository)
 - [ ] MoonBit package publication (pending)
 
 ---
