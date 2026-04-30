@@ -8,6 +8,8 @@ import {
 // Values
 pub fn parse_schema(@kdl.KdlDocument) -> Result[SchemaDocument, @kdl.KdlError]
 
+pub fn validate(@kdl.KdlDocument, SchemaDocument) -> Result[Unit, @kdl.KdlError]
+
 // Errors
 
 // Types and methods

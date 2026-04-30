@@ -1,6 +1,7 @@
 import {
   "lenitain/kdl",
   "moonbitlang/core/buffer",
+  "moonbitlang/core/string",
 }
 
 options(

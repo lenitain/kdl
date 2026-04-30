@@ -3,6 +3,7 @@ using @lenitain/kdl {
   type KdlDocument,
   type KdlNode,
   type KdlValue,
+  type KdlEntry,
   type KdlError,
   type KdlDiagnostic,
 }
@@ -667,6 +668,669 @@ pub fn parse_schema(doc : KdlDocument) -> Result[SchemaDocument, KdlError] {
       tag_names_validation,
       other_tags_allowed,
     })
+  }
+}
+
+///|
+priv struct Validator {
+  errors : Array[KdlDiagnostic]
+}
+
+///|
+fn Validator::new() -> Validator {
+  { errors: [] }
+}
+
+///|
+fn Validator::add_error(self : Validator, message : String) -> Unit {
+  self.errors.push(
+    KdlDiagnostic::new("", 0, 0, Some(message), None, None, Error),
+  )
+}
+
+///|
+fn Validator::to_error(self : Validator) -> KdlError {
+  let err = KdlError::new("")
+  for diag in self.errors {
+    err.push(diag)
+  }
+  err
+}
+
+///|
+fn value_to_double(value : KdlValue) -> Double? {
+  match value {
+    KdlValue::Integer(i) => Some(i.to_double())
+    KdlValue::Float(f) => Some(f)
+    _ => None
+  }
+}
+
+///|
+fn check_date(s : String) -> Bool {
+  if s.length() != 10 {
+    return false
+  }
+  for i in 0..<10 {
+    let c = s.code_unit_at(i).unsafe_to_char()
+    if i == 4 || i == 7 {
+      if c != '-' {
+        return false
+      }
+    } else if !c.is_ascii_digit() {
+      return false
+    }
+  }
+  true
+}
+
+///|
+fn check_time(s : String) -> Bool {
+  if s.length() < 8 {
+    return false
+  }
+  for i in 0..<8 {
+    let c = s.code_unit_at(i).unsafe_to_char()
+    if i == 2 || i == 5 {
+      if c != ':' {
+        return false
+      }
+    } else if !c.is_ascii_digit() {
+      return false
+    }
+  }
+  true
+}
+
+///|
+fn check_datetime(s : String) -> Bool {
+  if s.length() < 19 {
+    return false
+  }
+  let t_pos = s.find("T")
+  if t_pos is Some(pos) {
+    pos >= 10 &&
+    check_date(s.view(end_offset=pos).data()) &&
+    check_time(s.view(start_offset=pos + 1).data())
+  } else {
+    false
+  }
+}
+
+///|
+fn check_email(s : String) -> Bool {
+  let at_pos = s.find("@")
+  if at_pos is Some(pos) {
+    if pos > 0 && pos < s.length() - 1 {
+      let domain = s.view(start_offset=pos + 1).data()
+      domain.find(".") is Some(_)
+    } else {
+      false
+    }
+  } else {
+    false
+  }
+}
+
+///|
+fn check_hostname(s : String) -> Bool {
+  if s.length() == 0 || s.length() > 253 {
+    return false
+  }
+  for i in 0..<s.length() {
+    let c = s.code_unit_at(i).unsafe_to_char()
+    if !c.is_ascii_digit() && !c.is_ascii_alphabetic() && c != '-' && c != '.' {
+      return false
+    }
+  }
+  true
+}
+
+///|
+fn check_ipv4(s : String) -> Bool {
+  let mut dots = 0
+  let mut digits = 0
+  for i in 0..<s.length() {
+    let c = s.code_unit_at(i).unsafe_to_char()
+    if c == '.' {
+      if digits == 0 {
+        return false
+      }
+      dots = dots + 1
+      digits = 0
+    } else if c.is_ascii_digit() {
+      digits = digits + 1
+      if digits > 3 {
+        return false
+      }
+    } else {
+      return false
+    }
+  }
+  dots == 3 && digits > 0
+}
+
+///|
+fn check_ipv6(s : String) -> Bool {
+  let mut colons = 0
+  for i in 0..<s.length() {
+    let c = s.code_unit_at(i).unsafe_to_char()
+    if c == ':' {
+      colons = colons + 1
+    } else if !c.is_ascii_hexdigit() {
+      return false
+    }
+  }
+  colons >= 2 && colons <= 7
+}
+
+///|
+fn check_uri(s : String) -> Bool {
+  let colon_pos = s.find(":")
+  if colon_pos is Some(pos) {
+    pos < s.length() - 2 &&
+    s.code_unit_at(pos + 1).unsafe_to_char() == '/' &&
+    s.code_unit_at(pos + 2).unsafe_to_char() == '/'
+  } else {
+    false
+  }
+}
+
+///|
+fn check_format(s : String, fmt : String) -> Bool {
+  match fmt {
+    "date-time" => check_datetime(s)
+    "date" => check_date(s)
+    "time" => check_time(s)
+    "email" => check_email(s)
+    "hostname" => check_hostname(s)
+    "ipv4" => check_ipv4(s)
+    "ipv6" => check_ipv6(s)
+    "uri" | "url" => check_uri(s)
+    _ => true
+  }
+}
+
+///|
+fn string_contains(arr : Array[String], value : String) -> Bool {
+  for v in arr {
+    if v == value {
+      return true
+    }
+  }
+  false
+}
+
+///|
+fn Validator::validate_value(
+  self : Validator,
+  value : KdlValue,
+  validation : SchemaValidation,
+  path : String,
+) -> Unit {
+  match validation.type_constraint {
+    Some(tc) => {
+      let valid = match tc {
+        "string" => value.is_string()
+        "number" => value.is_integer() || value.is_float()
+        "boolean" => value.is_bool()
+        "null" => value.is_null()
+        "integer" => value.is_integer()
+        "float" => value.is_float()
+        _ => true
+      }
+      if !valid {
+        self.add_error("\{path}: expected type \{tc}, got \{value}")
+      }
+    }
+    None => ()
+  }
+  match validation.enum_values {
+    Some(vals) => {
+      let found = vals.any(fn(v) { v == value })
+      if !found {
+        self.add_error("\{path}: value \{value} not in allowed values")
+      }
+    }
+    None => ()
+  }
+  match validation.pattern {
+    Some(pat) =>
+      match value {
+        KdlValue::String(s) =>
+          try {
+            let regex = @string.Regex::new(pat[:])
+            if regex.execute(s[:]) is None {
+              self.add_error("\{path}: string does not match pattern \{pat}")
+            }
+          } catch {
+            _ => self.add_error("\{path}: invalid regex pattern \{pat}")
+          }
+        _ => ()
+      }
+    None => ()
+  }
+  match validation.min_length {
+    Some(min) =>
+      match value {
+        KdlValue::String(s) =>
+          if s.length() < min {
+            self.add_error(
+              "\{path}: string length \{s.length()} < minimum \{min}",
+            )
+          }
+        _ => ()
+      }
+    None => ()
+  }
+  match validation.max_length {
+    Some(max) =>
+      match value {
+        KdlValue::String(s) =>
+          if s.length() > max {
+            self.add_error(
+              "\{path}: string length \{s.length()} > maximum \{max}",
+            )
+          }
+        _ => ()
+      }
+    None => ()
+  }
+  match validation.format {
+    Some(fmt) =>
+      match value {
+        KdlValue::String(s) =>
+          if !check_format(s, fmt) {
+            self.add_error("\{path}: string does not match format \{fmt}")
+          }
+        _ => ()
+      }
+    None => ()
+  }
+  match value_to_double(value) {
+    Some(num) => {
+      match validation.gt {
+        Some(limit) =>
+          if num <= limit {
+            self.add_error("\{path}: \{num} is not > \{limit}")
+          }
+        None => ()
+      }
+      match validation.gte {
+        Some(limit) =>
+          if num < limit {
+            self.add_error("\{path}: \{num} is not >= \{limit}")
+          }
+        None => ()
+      }
+      match validation.lt {
+        Some(limit) =>
+          if num >= limit {
+            self.add_error("\{path}: \{num} is not < \{limit}")
+          }
+        None => ()
+      }
+      match validation.lte {
+        Some(limit) =>
+          if num > limit {
+            self.add_error("\{path}: \{num} is not <= \{limit}")
+          }
+        None => ()
+      }
+      match validation.modulus_divisor {
+        Some(divisor) =>
+          if divisor != 0.0 {
+            let remainder = num - (num / divisor).floor() * divisor
+            match validation.modulus_remainder {
+              Some(expected) =>
+                if remainder != expected {
+                  self.add_error(
+                    "\{path}: \{num} mod \{divisor} = \{remainder}, expected \{expected}",
+                  )
+                }
+              None =>
+                if remainder != 0.0 {
+                  self.add_error(
+                    "\{path}: \{num} is not divisible by \{divisor}",
+                  )
+                }
+            }
+          }
+        None => ()
+      }
+    }
+    None => ()
+  }
+  match validation.tag {
+    Some(tag_val) =>
+      match value {
+        KdlValue::Null => ()
+        KdlValue::String(s) =>
+          self.validate_value(KdlValue::String(s), tag_val, "\{path}~tag")
+        _ => ()
+      }
+    None => ()
+  }
+}
+
+///|
+fn Validator::validate_node(
+  self : Validator,
+  node : KdlNode,
+  schema : SchemaNode,
+  path : String,
+) -> Unit {
+  let node_path = "\{path}/\{node.name.value()}"
+  match schema.tag_validation {
+    Some(tv) => {
+      let tag_value = match node.ty {
+        Some(t) => KdlValue::String(t.value())
+        None => KdlValue::Null
+      }
+      self.validate_value(tag_value, tv, "\{node_path}~tag")
+    }
+    None => ()
+  }
+  let schema_prop_keys : Array[String] = []
+  for sp in schema.props {
+    match sp.key {
+      Some(k) => schema_prop_keys.push(k)
+      None => ()
+    }
+  }
+  for sp in schema.props {
+    if sp.required {
+      match sp.key {
+        Some(k) => {
+          let found = node.entries.any(fn(e) {
+            match e.name {
+              Some(ident) => ident.value() == k
+              None => false
+            }
+          })
+          if !found {
+            self.add_error("\{node_path}: missing required property '\{k}'")
+          }
+        }
+        None => ()
+      }
+    }
+  }
+  if !schema.other_props_allowed {
+    for entry in node.entries {
+      match entry.name {
+        Some(ident) => {
+          let key = ident.value()
+          if !string_contains(schema_prop_keys, key) {
+            match schema.prop_names_validation {
+              Some(pnv) =>
+                self.validate_value(
+                  KdlValue::String(key),
+                  pnv,
+                  "\{node_path}~prop-name",
+                )
+              None =>
+                self.add_error("\{node_path}: unexpected property '\{key}'")
+            }
+          }
+        }
+        None => ()
+      }
+    }
+  }
+  for sp in schema.props {
+    match sp.key {
+      Some(k) =>
+        for entry in node.entries {
+          match entry.name {
+            Some(ident) =>
+              if ident.value() == k {
+                self.validate_value(
+                  entry.value,
+                  sp.validation,
+                  "\{node_path}.\{k}",
+                )
+              }
+            None => ()
+          }
+        }
+      None => ()
+    }
+  }
+  let positional : Array[KdlEntry] = []
+  for entry in node.entries {
+    if entry.name is None {
+      positional.push(entry)
+    }
+  }
+  for sv in schema.values {
+    match sv.min {
+      Some(min) =>
+        if positional.length() < min {
+          self.add_error(
+            "\{node_path}: expected at least \{min} values, got \{positional.length()}",
+          )
+        }
+      None => ()
+    }
+    match sv.max {
+      Some(max) =>
+        if positional.length() > max {
+          self.add_error(
+            "\{node_path}: expected at most \{max} values, got \{positional.length()}",
+          )
+        }
+      None => ()
+    }
+    for i in 0..<positional.length() {
+      self.validate_value(
+        positional[i].value,
+        sv.validation,
+        "\{node_path}[\{i}]",
+      )
+    }
+  }
+  match schema.children {
+    Some(ch_schema) => {
+      let children = match node.children {
+        Some(c) => c
+        None => []
+      }
+      self.validate_children(children, ch_schema, node_path)
+    }
+    None => ()
+  }
+}
+
+///|
+fn Validator::validate_children(
+  self : Validator,
+  children : Array[KdlNode],
+  schema : SchemaChildren,
+  path : String,
+) -> Unit {
+  for sn in schema.nodes {
+    match sn.name {
+      Some(name) => {
+        let mut count = 0
+        for c in children {
+          if c.name.value() == name {
+            count = count + 1
+          }
+        }
+        match sn.min {
+          Some(min) =>
+            if count < min {
+              self.add_error(
+                "\{path}: expected at least \{min} '\{name}' nodes, got \{count}",
+              )
+            }
+          None => ()
+        }
+        match sn.max {
+          Some(max) =>
+            if count > max {
+              self.add_error(
+                "\{path}: expected at most \{max} '\{name}' nodes, got \{count}",
+              )
+            }
+          None => ()
+        }
+      }
+      None => ()
+    }
+  }
+  if !schema.other_nodes_allowed {
+    for child in children {
+      let name = child.name.value()
+      let matched = schema.nodes.any(fn(sn) {
+        match sn.name {
+          Some(n) => n == name
+          None => true
+        }
+      })
+      if !matched {
+        match schema.node_names_validation {
+          Some(nnv) =>
+            self.validate_value(
+              KdlValue::String(name),
+              nnv,
+              "\{path}~node-name",
+            )
+          None => self.add_error("\{path}: unexpected node '\{name}'")
+        }
+      }
+    }
+  }
+  for child in children {
+    let name = child.name.value()
+    for sn in schema.nodes {
+      match sn.name {
+        Some(n) => if n == name { self.validate_node(child, sn, path) }
+        None => ()
+      }
+    }
+  }
+}
+
+///|
+pub fn validate(
+  doc : KdlDocument,
+  schema : SchemaDocument,
+) -> Result[Unit, KdlError] {
+  let v = Validator::new()
+  match schema.node_names_validation {
+    Some(nnv) =>
+      for node in doc.nodes {
+        v.validate_value(
+          KdlValue::String(node.name.value()),
+          nnv,
+          "document~node-name",
+        )
+      }
+    None => ()
+  }
+  if !schema.other_nodes_allowed && schema.node_names_validation is None {
+    for node in doc.nodes {
+      let name = node.name.value()
+      let matched = schema.nodes.any(fn(sn) {
+        match sn.name {
+          Some(n) => n == name
+          None => true
+        }
+      })
+      if !matched {
+        v.add_error("document: unexpected node '\{name}'")
+      }
+    }
+  }
+  for sn in schema.nodes {
+    match sn.name {
+      Some(name) => {
+        let mut count = 0
+        for n in doc.nodes {
+          if n.name.value() == name {
+            count = count + 1
+          }
+        }
+        match sn.min {
+          Some(min) =>
+            if count < min {
+              v.add_error(
+                "document: expected at least \{min} '\{name}' nodes, got \{count}",
+              )
+            }
+          None => ()
+        }
+        match sn.max {
+          Some(max) =>
+            if count > max {
+              v.add_error(
+                "document: expected at most \{max} '\{name}' nodes, got \{count}",
+              )
+            }
+          None => ()
+        }
+      }
+      None => ()
+    }
+  }
+  for node in doc.nodes {
+    let name = node.name.value()
+    for sn in schema.nodes {
+      match sn.name {
+        Some(n) => if n == name { v.validate_node(node, sn, "document") }
+        None => ()
+      }
+    }
+  }
+  match schema.tag_names_validation {
+    Some(tnv) =>
+      for node in doc.nodes {
+        match node.ty {
+          Some(tag) =>
+            v.validate_value(
+              KdlValue::String(tag.value()),
+              tnv,
+              "document~tag-name",
+            )
+          None => ()
+        }
+      }
+    None => ()
+  }
+  if !schema.other_tags_allowed {
+    for node in doc.nodes {
+      match node.ty {
+        Some(tag) => {
+          let tag_name = tag.value()
+          let matched = schema.tags.any(fn(st) {
+            match st.name {
+              Some(n) => n == tag_name
+              None => true
+            }
+          })
+          if !matched {
+            let node_name = node.name.value()
+            let has_tag_validation = schema.nodes.any(fn(sn) {
+              match sn.name {
+                Some(n) => n == node_name && sn.tag_validation is Some(_)
+                None => false
+              }
+            })
+            if !has_tag_validation {
+              v.add_error("document: unexpected tag '\{tag_name}'")
+            }
+          }
+        }
+        None => ()
+      }
+    }
+  }
+  if v.errors.length() > 0 {
+    Err(v.to_error())
+  } else {
+    Ok(())
   }
 }
 

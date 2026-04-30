@@ -69,7 +69,7 @@ Migrate from current flat structure to target structure:
 | Phase 3 | Create `parser/` subpackage | ✅ Completed |
 | Phase 5 | Create `format.mbt` (root directory) | ✅ Completed |
 | Phase 6 | Create `query/` subpackage | ✅ Completed |
-| Phase 7 | Create `schema/` subpackage | ⏳ Pending |
+| Phase 7 | Create `schema/` subpackage | ✅ Completed |
 | Phase 8 | Create `cmd/main/` CLI tool | ⏳ Pending |
 
 ---
@@ -144,11 +144,22 @@ Migrate from current flat structure to target structure:
 - [x] 194 tests passing (tokenizer + parser + engine)
 
 ## Phase 7: Schema Support
-- [ ] Create `schema/` subpackage
-- [ ] Schema document parsing
-- [ ] Node definition validation
-- [ ] Property/value validation
-- [ ] Type checking
+- [x] Create `schema/` subpackage
+- [x] Schema document parsing
+- [x] Schema validation engine (`validate` function)
+- [x] Type checking (string/number/boolean/null/integer/float)
+- [x] Enum validation
+- [x] Pattern validation (regex)
+- [x] String length validation (min-length/max-length)
+- [x] Numeric comparison (>, >=, <, <=)
+- [x] Modulus validation (%, remainder)
+- [x] Format validation (date, time, date-time, email, hostname, ipv4, ipv6, uri)
+- [x] Required props/values validation
+- [x] Extra props/values validation (other_props_allowed)
+- [x] Children validation (min/max count, other_nodes_allowed)
+- [x] Tag validation (node-level and document-level)
+- [x] Node-names/tag-names/prop-names validation
+- [x] 29 validation tests
 
 ## Phase 8: Tools and Polish
 - [ ] Autoformat

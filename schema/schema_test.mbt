@@ -911,3 +911,1054 @@ test "enum_values concatenation in merge" {
     Err(_) => assert_true(false)
   }
 }
+
+// ========== Validation Tests ==========
+
+///|
+fn make_schema_doc(
+  children : Array[@lenitain/kdl.KdlNode],
+) -> @lenitain/kdl.KdlDocument {
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_children(
+      @lenitain/kdl.KdlIdentifier::new("document"),
+      children,
+    ),
+  )
+  doc
+}
+
+///|
+test "valid document passes validation" {
+  let type_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("type"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("string"))],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [type_node],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("greeting"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("greeting"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("hello"))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Ok(_))
+}
+
+///|
+test "missing required node fails" {
+  let node_schema = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("name"),
+        @lenitain/kdl.KdlValue::String("required-node"),
+      ),
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("min"),
+        @lenitain/kdl.KdlValue::Integer(1L),
+      ),
+    ],
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "extra node fails when other_nodes_allowed is false" {
+  let node_schema = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("name"),
+        @lenitain/kdl.KdlValue::String("allowed"),
+      ),
+    ],
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("allowed")),
+  )
+  doc.push(
+    @lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("extra")),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "extra node allowed when other_nodes_allowed is true" {
+  let ona = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("other-nodes-allowed"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Bool(true))],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("name"),
+        @lenitain/kdl.KdlValue::String("allowed"),
+      ),
+    ],
+  )
+  let schema_doc = make_schema_doc([ona, node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("allowed")),
+  )
+  doc.push(
+    @lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("extra")),
+  )
+  assert_true(validate(doc, schema) is Ok(_))
+}
+
+///|
+test "missing required prop fails" {
+  let prop = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("prop"),
+    [
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("key"),
+        @lenitain/kdl.KdlValue::String("name"),
+      ),
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("required"),
+        @lenitain/kdl.KdlValue::Bool(true),
+      ),
+    ],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [prop],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("person"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("person")),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "extra prop fails when other_props_allowed is false" {
+  let prop = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("prop"),
+    [
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("key"),
+        @lenitain/kdl.KdlValue::String("name"),
+      ),
+    ],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [prop],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("person"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("person"),
+      [
+        @lenitain/kdl.KdlEntry::new_prop(
+          @lenitain/kdl.KdlIdentifier::new("name"),
+          @lenitain/kdl.KdlValue::String("Alice"),
+        ),
+        @lenitain/kdl.KdlEntry::new_prop(
+          @lenitain/kdl.KdlIdentifier::new("age"),
+          @lenitain/kdl.KdlValue::Integer(30L),
+        ),
+      ],
+    ),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "type mismatch fails" {
+  let type_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("type"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("number"))],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [type_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("count"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("count"),
+      [
+        @lenitain/kdl.KdlEntry::new(
+          @lenitain/kdl.KdlValue::String("not-a-number"),
+        ),
+      ],
+    ),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "type match passes" {
+  let type_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("type"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("number"))],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [type_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("count"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("count"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Integer(42L))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Ok(_))
+}
+
+///|
+test "enum value not in list fails" {
+  let enum_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("enum"),
+    [
+      @lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("red")),
+      @lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("green")),
+      @lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("blue")),
+    ],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [enum_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("color"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("color"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("yellow"))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "enum value in list passes" {
+  let enum_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("enum"),
+    [
+      @lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("red")),
+      @lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("green")),
+      @lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("blue")),
+    ],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [enum_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("color"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("color"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("red"))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Ok(_))
+}
+
+///|
+test "pattern mismatch fails" {
+  let pattern_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("pattern"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("^[a-z]+$"))],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [pattern_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("id"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("id"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("ABC123"))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "pattern match passes" {
+  let pattern_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("pattern"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("^[a-z]+$"))],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [pattern_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("id"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("id"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("hello"))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Ok(_))
+}
+
+///|
+test "string length validation - too short" {
+  let min_len = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("min-length"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Integer(3L))],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [min_len],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("name"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("ab"))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "string length validation - too long" {
+  let max_len = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("max-length"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Integer(5L))],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [max_len],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("name"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      [
+        @lenitain/kdl.KdlEntry::new(
+          @lenitain/kdl.KdlValue::String("toolongvalue"),
+        ),
+      ],
+    ),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "string length validation - passes" {
+  let min_len = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("min-length"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Integer(2L))],
+  )
+  let max_len = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("max-length"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Integer(10L))],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [min_len, max_len],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("name"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("hello"))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Ok(_))
+}
+
+///|
+test "numeric comparison - gt fails" {
+  let gt_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new(">"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Integer(10L))],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [gt_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("num"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("num"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Integer(10L))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "numeric comparison - gt passes" {
+  let gt_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new(">"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Integer(10L))],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [gt_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("num"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("num"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Integer(11L))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Ok(_))
+}
+
+///|
+test "numeric comparison - lte fails" {
+  let lte_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("<="),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Integer(100L))],
+  )
+  let value_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [lte_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("num"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("num"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::Integer(101L))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "value count validation - min fails" {
+  let value_schema = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("min"),
+        @lenitain/kdl.KdlValue::Integer(2L),
+      ),
+    ],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("items"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("items"),
+      [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("a"))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "value count validation - max fails" {
+  let value_schema = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("value"),
+    [
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("max"),
+        @lenitain/kdl.KdlValue::Integer(2L),
+      ),
+    ],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [value_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("items"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("items"),
+      [
+        @lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("a")),
+        @lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("b")),
+        @lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("c")),
+      ],
+    ),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "children validation - missing required child" {
+  let child_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("name"),
+        @lenitain/kdl.KdlValue::String("item"),
+      ),
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("min"),
+        @lenitain/kdl.KdlValue::Integer(1L),
+      ),
+    ],
+  )
+  let children_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("children"),
+    [child_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [children_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("container"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("container")),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "children validation - passes with required child" {
+  let child_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("name"),
+        @lenitain/kdl.KdlValue::String("item"),
+      ),
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("min"),
+        @lenitain/kdl.KdlValue::Integer(1L),
+      ),
+    ],
+  )
+  let children_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("children"),
+    [child_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [children_schema],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("container"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_children(
+      @lenitain/kdl.KdlIdentifier::new("container"),
+      [@lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("item"))],
+    ),
+  )
+  assert_true(validate(doc, schema) is Ok(_))
+}
+
+///|
+test "tag validation fails" {
+  let type_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("type"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("string"))],
+  )
+  let enum_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("enum"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("my-tag"))],
+  )
+  let tag_val = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("tag"),
+    [type_node, enum_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [tag_val],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("tagged"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  let tagged_node = @lenitain/kdl.KdlNode::full(
+    Some(@lenitain/kdl.KdlIdentifier::new("wrong-tag")),
+    @lenitain/kdl.KdlIdentifier::new("tagged"),
+    [],
+    None,
+  )
+  doc.push(tagged_node)
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "tag validation passes" {
+  let type_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("type"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("string"))],
+  )
+  let enum_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("enum"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("my-tag"))],
+  )
+  let tag_val = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("tag"),
+    [type_node, enum_node],
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [tag_val],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("tagged"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  let tagged_node = @lenitain/kdl.KdlNode::full(
+    Some(@lenitain/kdl.KdlIdentifier::new("my-tag")),
+    @lenitain/kdl.KdlIdentifier::new("tagged"),
+    [],
+    None,
+  )
+  doc.push(tagged_node)
+  assert_true(validate(doc, schema) is Ok(_))
+}
+
+///|
+test "node count max fails" {
+  let node_schema = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("name"),
+        @lenitain/kdl.KdlValue::String("item"),
+      ),
+      @lenitain/kdl.KdlEntry::new_prop(
+        @lenitain/kdl.KdlIdentifier::new("max"),
+        @lenitain/kdl.KdlValue::Integer(2L),
+      ),
+    ],
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(@lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("item")))
+  doc.push(@lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("item")))
+  doc.push(@lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("item")))
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "prop value validation passes" {
+  let type_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("type"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("string"))],
+  )
+  let prop = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("prop"),
+    [type_node],
+  )
+  prop.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("key"),
+      @lenitain/kdl.KdlValue::String("name"),
+    ),
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [prop],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("person"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("person"),
+      [
+        @lenitain/kdl.KdlEntry::new_prop(
+          @lenitain/kdl.KdlIdentifier::new("name"),
+          @lenitain/kdl.KdlValue::String("Alice"),
+        ),
+      ],
+    ),
+  )
+  assert_true(validate(doc, schema) is Ok(_))
+}
+
+///|
+test "prop value validation fails on type mismatch" {
+  let type_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("type"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("string"))],
+  )
+  let prop = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("prop"),
+    [type_node],
+  )
+  prop.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("key"),
+      @lenitain/kdl.KdlValue::String("name"),
+    ),
+  )
+  let node_schema = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node"),
+    [prop],
+  )
+  node_schema.entries.push(
+    @lenitain/kdl.KdlEntry::new_prop(
+      @lenitain/kdl.KdlIdentifier::new("name"),
+      @lenitain/kdl.KdlValue::String("person"),
+    ),
+  )
+  let schema_doc = make_schema_doc([node_schema])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::with_entries(
+      @lenitain/kdl.KdlIdentifier::new("person"),
+      [
+        @lenitain/kdl.KdlEntry::new_prop(
+          @lenitain/kdl.KdlIdentifier::new("name"),
+          @lenitain/kdl.KdlValue::Integer(42L),
+        ),
+      ],
+    ),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
+
+///|
+test "node-names validation" {
+  let pattern_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("pattern"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("^[a-z]+$"))],
+  )
+  let nn = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node-names"),
+    [pattern_node],
+  )
+  let schema_doc = make_schema_doc([nn])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(@lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("abc")))
+  assert_true(validate(doc, schema) is Ok(_))
+}
+
+///|
+test "node-names validation fails" {
+  let pattern_node = @lenitain/kdl.KdlNode::with_entries(
+    @lenitain/kdl.KdlIdentifier::new("pattern"),
+    [@lenitain/kdl.KdlEntry::new(@lenitain/kdl.KdlValue::String("^[a-z]+$"))],
+  )
+  let nn = @lenitain/kdl.KdlNode::with_children(
+    @lenitain/kdl.KdlIdentifier::new("node-names"),
+    [pattern_node],
+  )
+  let schema_doc = make_schema_doc([nn])
+  let schema = match parse_schema(schema_doc) {
+    Ok(s) => s
+    Err(_) => abort("schema parse failed")
+  }
+  let doc = @lenitain/kdl.KdlDocument::new()
+  doc.push(
+    @lenitain/kdl.KdlNode::new(@lenitain/kdl.KdlIdentifier::new("ABC123")),
+  )
+  assert_true(validate(doc, schema) is Err(_))
+}
