@@ -9,7 +9,7 @@ Implement a complete KDL document language library for [MoonBit](https://moonbit
 
 ## Directory Structure Plan
 
-Project structure, final goal:
+Project structure, final goal. Tests live inside each package (`_test.mbt` for blackbox, `_wbtest.mbt` for whitebox), following MoonBit convention.
 
 ```
 kdl/
@@ -17,6 +17,8 @@ kdl/
 ├── types.mbt                            # KdlValue, KdlIdentifier, KdlEntry, KdlNode, KdlDocument
 ├── error.mbt                            # KdlError, KdlDiagnostic, KdlSeverity
 ├── format.mbt                           # KDL serialization/formatting output
+├── kdl_test.mbt                         # Root package blackbox tests
+├── kdl_wbtest.mbt                       # Root package whitebox tests
 ├── moon.mod.json                        # Module config
 ├── moon.pkg                             # Package config
 ├── LICENSE                              # Apache-2.0
@@ -29,46 +31,30 @@ kdl/
 │       ├── token.mbt                    # Token type definition
 │       ├── lexer_test.mbt               # Lexer unit tests
 │       ├── lexer_bug_test.mbt           # Lexer regression tests
-│       └── moon.pkg.json                # Tokenizer package config
+│       └── moon.pkg                     # Tokenizer package config
 │
 ├── parser/                              # Parser
 │   ├── parser.mbt                       # v1/v2 parsing logic
 │   ├── v1_compat.mbt                    # v1 compatibility adapter
 │   ├── parser_test.mbt                  # Parser unit tests
-│   └── moon.pkg.json                    # Parser package config
+│   └── moon.pkg                         # Parser package config
 │
 ├── query/                               # KQL query engine (Phase 6)
 │   ├── query.mbt                        # Query execution
 │   ├── query_parser.mbt                 # KQL selector parsing
 │   ├── query_test.mbt                   # Query tests
-│   └── moon.pkg.json                    # Query package config
+│   └── moon.pkg                         # Query package config
 │
 ├── schema/                              # Schema validation (Phase 7)
 │   ├── schema.mbt                       # Schema definition and validation
 │   ├── schema_test.mbt                  # Schema tests
-│   └── moon.pkg.json                    # Schema package config
+│   └── moon.pkg                         # Schema package config
 │
-├── cmd/                                 # Command line tools
-│   └── main/                            # CLI demo
-│       ├── main.mbt                     # Interactive KDL parser demo
-│       ├── main_test.mbt                # Demo tests
-│       └── moon.pkg.json                # Main package config
-│
-├── test
-│   ├── kdl_test.mbt                     # Core type tests
-│   ├── kdl_wbtest.mbt                   # White box tests
-│   ├── parser_test.mbt                  # Parser tests
-│   ├── parser_v1_test.mbt               # KDL v1 parsing tests
-│   ├── parser_v2_test.mbt               # KDL v2 parsing tests
-│   ├── format_test.mbt                  # Serialization tests
-│   ├── official_kdl_test_suite_test.mbt # Official KDL spec compliance tests
-│   ├── comprehensive_test.mbt           # Complex real-world scenario tests
-│   ├── coverage_test.mbt                # Coverage enhancement tests
-│   └── special_value_test.mbt           # Special value (inf, nan, #null) tests
-│
-└── target/                              # Build artifacts (generated)
-    ├── wasm-gc/                          # WebAssembly output
-    └── packages.json                     # Package dependency info
+└── cmd/                                 # Command line tools (Phase 8)
+    └── main/                            # CLI demo
+        ├── main.mbt                     # Interactive KDL parser demo
+        ├── main_test.mbt                # Demo tests
+        └── moon.pkg                     # Main package config
 ```
 
 ### Migration Plan
@@ -102,7 +88,7 @@ Migrate from current flat structure to target structure:
 - [x] `KdlError` / `KdlDiagnostic`: Multiple error collection, source position
 
 ## Phase 2: Tokenizer / Lexer ✅ Completed
-- [x] Create `internal/tokenize/` subpackage (token.mbt + tokenize.mbt + moon.pkg.json)
+- [x] Create `internal/tokenize/` subpackage (token.mbt + tokenize.mbt + moon.pkg)
 - [x] Token type design: `KdlToken` enum (Ident, String, Integer, Float, Bool, Null, Inf, NegInf, Nan, LBrace, RBrace, LParen, RParen, Eq, Slashdash, Semicolon, Newline, Eof)
 - [x] Basic character stream processing (Cursor/SourcePosition)
 - [x] Whitespace/newline handling
@@ -113,7 +99,7 @@ Migrate from current flat structure to target structure:
 - [x] Lexer unit tests (66 tests, 59 passed, 7 failed - number parsing to be implemented)
 
 ## Phase 3: Parser — v1 Support
-- [x] Create `parser/` subpackage (parser.mbt + moon.pkg.json)
+- [x] Create `parser/` subpackage (parser.mbt + moon.pkg)
 - [x] Bare identifier parsing
 - [x] Number parsing: decimal/hexadecimal/octal/binary (with `_` separator)
 - [x] Quoted string parsing: escape sequences `\n`, `\t`, `\\`, `\"`, `\/`, `\b`, `\f`, `\u{...}`
@@ -189,26 +175,20 @@ kdl/
 ├── kdl.mbt              — Public API (pending re-export)
 ├── types.mbt            — KdlValue, KdlIdentifier, KdlEntry, KdlNode, KdlDocument ✅
 ├── error.mbt            — KdlError, KdlDiagnostic, KdlSeverity ✅
-├── kdl_test.mbt         — Black box tests (35 tests) ✅
-├── kdl_wbtest.mbt       — White box tests
+├── kdl_test.mbt         — Root package blackbox tests (35 tests) ✅
+├── kdl_wbtest.mbt       — Root package whitebox tests
 ├── moon.mod.json        — Module: lenitain/kdl
 ├── moon.pkg             — Package config
 ├── PROGRESS.md          — This file
 │
-├── internal/                            — Internal modules
-│   └── tokenize/                        — Lexical analysis ✅
-│       ├── token.mbt                    — Token type definition ✅
-│       ├── tokenize.mbt                 — Main tokenizer implementation ✅
-│       ├── lexer_test.mbt               — Lexer unit tests (66 tests) ✅
-│       └── moon.pkg.json                — Tokenizer package config ✅
+├── internal/tokenize/   — Lexical analysis ✅
+│   ├── token.mbt        — Token type definition ✅
+│   ├── tokenize.mbt     — Main tokenizer implementation ✅
+│   ├── lexer_test.mbt   — Lexer unit tests (66 tests) ✅
+│   └── moon.pkg         — Tokenizer package config ✅
 │
-├── parser/                              — Parser ✅
-│   ├── parser.mbt                       — v1 parsing logic ✅
-│   ├── parser_test.mbt                  — Parser unit tests (5 tests) ✅
-│   └── moon.pkg.json                    — Parser package config ✅
-│
-└── test
-    ├── kdl_test.mbt                     — Core type tests (35 tests) ✅
-    ├── kdl_wbtest.mbt                   — White box tests
-    └── internal/tokenize/lexer_test.mbt — Lexer unit tests (66 tests) ✅
+└── parser/              — Parser ✅
+    ├── parser.mbt       — v1 parsing logic ✅
+    ├── parser_test.mbt  — Parser unit tests (5 tests) ✅
+    └── moon.pkg         — Parser package config ✅
 ```
