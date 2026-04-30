@@ -86,7 +86,12 @@ pub impl Show for SourceSpan with output(self, logger) {
 }
 
 ///|
-pub fn SourceSpan::new(start : Int, end : Int, line : Int, col : Int) -> SourceSpan {
+pub fn SourceSpan::new(
+  start : Int,
+  end : Int,
+  line : Int,
+  col : Int,
+) -> SourceSpan {
   { start, end, line, col }
 }
 

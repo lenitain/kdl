@@ -79,7 +79,7 @@ Migrate from current flat structure to target structure:
 |-------|-----------|----------------|
 | Phase 1 | Keep `types.mbt`, `error.mbt` in root directory | ✅ Completed |
 | Phase 2 | Create `internal/tokenize/` subpackage | ✅ Completed |
-| Phase 3 | Create `parser/` subpackage | ⏳ Pending |
+| Phase 3 | Create `parser/` subpackage | ✅ Completed |
 | Phase 5 | Create `format.mbt` (root directory) | ⏳ Pending |
 | Phase 6 | Create `query/` subpackage | ⏳ Pending |
 | Phase 7 | Create `schema/` subpackage | ⏳ Pending |
@@ -113,17 +113,17 @@ Migrate from current flat structure to target structure:
 - [x] Lexer unit tests (66 tests, 59 passed, 7 failed - number parsing to be implemented)
 
 ## Phase 3: Parser — v1 Support
-- [ ] Create `parser/` subpackage (parser.mbt + moon.pkg.json)
-- [ ] Bare identifier parsing
-- [ ] Number parsing: decimal/hexadecimal/octal/binary (with `_` separator)
-- [ ] Quoted string parsing: escape sequences `\n`, `\t`, `\\`, `\"`, `\/`, `\b`, `\f`, `\u{...}`
-- [ ] Raw string parsing `r"..."#`, `r##"..."##`
-- [ ] Boolean: `true`/`false`
-- [ ] Null: `null`
-- [ ] Type annotation: `(bare-id)`
-- [ ] Node parsing: name + entries + children `{}`
+- [x] Create `parser/` subpackage (parser.mbt + moon.pkg.json)
+- [x] Bare identifier parsing
+- [x] Number parsing: decimal/hexadecimal/octal/binary (with `_` separator)
+- [x] Quoted string parsing: escape sequences `\n`, `\t`, `\\`, `\"`, `\/`, `\b`, `\f`, `\u{...}`
+- [x] Raw string parsing `r"..."#`, `r##"..."##`
+- [x] Boolean: `true`/`false`
+- [x] Null: `null`
+- [x] Type annotation: `(bare-id)`
+- [x] Node parsing: name + entries + children `{}`
 - [ ] Document parsing: version marker `/kdl-version 1`
-- [ ] End-to-end parsing of a complete KDL v1 document
+- [x] End-to-end parsing of a complete KDL v1 document
 
 ## Phase 4: Parser — v2 Support
 - [ ] Identifier string (bare word)
@@ -201,6 +201,11 @@ kdl/
 │       ├── tokenize.mbt                 — Main tokenizer implementation ✅
 │       ├── lexer_test.mbt               — Lexer unit tests (66 tests) ✅
 │       └── moon.pkg.json                — Tokenizer package config ✅
+│
+├── parser/                              — Parser ✅
+│   ├── parser.mbt                       — v1 parsing logic ✅
+│   ├── parser_test.mbt                  — Parser unit tests (5 tests) ✅
+│   └── moon.pkg.json                    — Parser package config ✅
 │
 └── test
     ├── kdl_test.mbt                     — Core type tests (35 tests) ✅

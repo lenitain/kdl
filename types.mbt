@@ -281,6 +281,24 @@ pub fn KdlNode::with_children(
 }
 
 ///|
+pub fn KdlNode::with_entries(
+  name : KdlIdentifier,
+  entries : Array[KdlEntry],
+) -> KdlNode {
+  { ty: None, name, entries, children: None }
+}
+
+///|
+pub fn KdlNode::full(
+  ty : KdlIdentifier?,
+  name : KdlIdentifier,
+  entries : Array[KdlEntry],
+  children : Array[KdlNode]?,
+) -> KdlNode {
+  { ty, name, entries, children }
+}
+
+///|
 pub struct KdlDocument {
   nodes : Array[KdlNode]
 }

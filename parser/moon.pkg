@@ -1,0 +1,10 @@
+import {
+  "lenitain/kdl",
+  "lenitain/kdl/internal/tokenize",
+  "moonbitlang/core/buffer",
+}
+
+options(
+  name: "lenitain/kdl/parser",
+  version: "0.1.0",
+)

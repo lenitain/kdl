@@ -1,5 +1,0 @@
-{
-  "name": "lenitain/kdl/internal/tokenize",
-  "version": "0.1.0",
-  "import": ["lenitain/kdl", "moonbitlang/core/buffer"]
-}

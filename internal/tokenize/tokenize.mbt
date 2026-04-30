@@ -39,7 +39,10 @@ fn Cursor::advance(self : Cursor) -> (String?, Cursor) {
     Some(ch) => {
       let new_line = if ch == "\n" { self.line + 1 } else { self.line }
       let new_col = if ch == "\n" { 1 } else { self.col + 1 }
-      (Some(ch), { input: self.input, pos: self.pos + 1, line: new_line, col: new_col })
+      (
+        Some(ch),
+        { input: self.input, pos: self.pos + 1, line: new_line, col: new_col },
+      )
     }
     None => (None, self)
   }
@@ -57,17 +60,67 @@ fn Cursor::current_span(self : Cursor, start : Int) -> SourceSpan {
 
 ///|
 fn is_newline(ch : String) -> Bool {
-  ch == "\n" || ch == "\r" || ch == "\u{85}" || ch == "\u{0B}" || ch == "\u{0C}" || ch == "\u{2028}" || ch == "\u{2029}"
+  ch == "\n" ||
+  ch == "\r" ||
+  ch == "\u{85}" ||
+  ch == "\u{0B}" ||
+  ch == "\u{0C}" ||
+  ch == "\u{2028}" ||
+  ch == "\u{2029}"
 }
 
 ///|
 fn is_whitespace(ch : String) -> Bool {
-  ch == "\t" || ch == " " || ch == "\u{00A0}" || ch == "\u{1680}" || ch == "\u{2000}" || ch == "\u{2001}" || ch == "\u{2002}" || ch == "\u{2003}" || ch == "\u{2004}" || ch == "\u{2005}" || ch == "\u{2006}" || ch == "\u{2007}" || ch == "\u{2008}" || ch == "\u{2009}" || ch == "\u{200A}" || ch == "\u{202F}" || ch == "\u{205F}" || ch == "\u{3000}"
+  ch == "\t" ||
+  ch == " " ||
+  ch == "\u{00A0}" ||
+  ch == "\u{1680}" ||
+  ch == "\u{2000}" ||
+  ch == "\u{2001}" ||
+  ch == "\u{2002}" ||
+  ch == "\u{2003}" ||
+  ch == "\u{2004}" ||
+  ch == "\u{2005}" ||
+  ch == "\u{2006}" ||
+  ch == "\u{2007}" ||
+  ch == "\u{2008}" ||
+  ch == "\u{2009}" ||
+  ch == "\u{200A}" ||
+  ch == "\u{202F}" ||
+  ch == "\u{205F}" ||
+  ch == "\u{3000}"
 }
 
 ///|
 fn is_disallowed_literal(ch : String) -> Bool {
-  ch == "\u{00}" || ch == "\u{01}" || ch == "\u{02}" || ch == "\u{03}" || ch == "\u{04}" || ch == "\u{05}" || ch == "\u{06}" || ch == "\u{07}" || ch == "\u{08}" || ch == "\u{0E}" || ch == "\u{0F}" || ch == "\u{10}" || ch == "\u{11}" || ch == "\u{12}" || ch == "\u{13}" || ch == "\u{14}" || ch == "\u{15}" || ch == "\u{16}" || ch == "\u{17}" || ch == "\u{18}" || ch == "\u{19}" || ch == "\u{1A}" || ch == "\u{1B}" || ch == "\u{1C}" || ch == "\u{1D}" || ch == "\u{1E}" || ch == "\u{1F}" || ch == "\u{7F}"
+  ch == "\u{00}" ||
+  ch == "\u{01}" ||
+  ch == "\u{02}" ||
+  ch == "\u{03}" ||
+  ch == "\u{04}" ||
+  ch == "\u{05}" ||
+  ch == "\u{06}" ||
+  ch == "\u{07}" ||
+  ch == "\u{08}" ||
+  ch == "\u{0E}" ||
+  ch == "\u{0F}" ||
+  ch == "\u{10}" ||
+  ch == "\u{11}" ||
+  ch == "\u{12}" ||
+  ch == "\u{13}" ||
+  ch == "\u{14}" ||
+  ch == "\u{15}" ||
+  ch == "\u{16}" ||
+  ch == "\u{17}" ||
+  ch == "\u{18}" ||
+  ch == "\u{19}" ||
+  ch == "\u{1A}" ||
+  ch == "\u{1B}" ||
+  ch == "\u{1C}" ||
+  ch == "\u{1D}" ||
+  ch == "\u{1E}" ||
+  ch == "\u{1F}" ||
+  ch == "\u{7F}"
 }
 
 ///|
@@ -75,7 +128,18 @@ fn is_identifier_char(ch : String) -> Bool {
   if is_whitespace(ch) || is_newline(ch) {
     return false
   }
-  if ch == "\\" || ch == "/" || ch == "(" || ch == ")" || ch == "{" || ch == "}" || ch == ";" || ch == "[" || ch == "]" || ch == "\"" || ch == "#" || ch == "=" {
+  if ch == "\\" ||
+    ch == "/" ||
+    ch == "(" ||
+    ch == ")" ||
+    ch == "{" ||
+    ch == "}" ||
+    ch == ";" ||
+    ch == "[" ||
+    ch == "]" ||
+    ch == "\"" ||
+    ch == "#" ||
+    ch == "=" {
     return false
   }
   if is_disallowed_literal(ch) {
@@ -114,15 +178,17 @@ fn Lexer::new(input : String) -> Lexer {
 fn Lexer::add_error(self : Lexer, start : Int, message : String) -> Lexer {
   let span = self.cursor.current_span(start)
   let new_errors = self.errors
-  new_errors.push(KdlDiagnostic::new(
-    self.cursor.input,
-    span.start,
-    span.end - span.start,
-    Some(message),
-    None,
-    None,
-    Error,
-  ))
+  new_errors.push(
+    KdlDiagnostic::new(
+      self.cursor.input,
+      span.start,
+      span.end - span.start,
+      Some(message),
+      None,
+      None,
+      Error,
+    ),
+  )
   { cursor: self.cursor, errors: new_errors }
 }
 
@@ -131,7 +197,7 @@ fn Lexer::skip_whitespace(self : Lexer) -> Lexer {
   let mut current = self
   while true {
     match current.cursor.peek() {
-      Some(ch) => {
+      Some(ch) =>
         if is_whitespace(ch) {
           let (_, new_cursor) = current.cursor.advance()
           current = { cursor: new_cursor, errors: current.errors }
@@ -154,7 +220,6 @@ fn Lexer::skip_whitespace(self : Lexer) -> Lexer {
         } else {
           break
         }
-      }
       None => break
     }
   }
@@ -185,7 +250,7 @@ fn Lexer::skip_multi_line_comment(self : Lexer) -> Lexer {
   let mut current = self
   while depth > 0 {
     match current.cursor.peek() {
-      Some(ch) => {
+      Some(ch) =>
         if ch == "/" {
           match current.cursor.peek_at(1) {
             Some("*") => {
@@ -216,7 +281,6 @@ fn Lexer::skip_multi_line_comment(self : Lexer) -> Lexer {
           let (_, new_cursor) = current.cursor.advance()
           current = { cursor: new_cursor, errors: current.errors }
         }
-      }
       None => break
     }
   }
@@ -232,7 +296,7 @@ fn Lexer::read_string(self : Lexer) -> (Result[KdlToken, String], Lexer) {
   let mut result : Result[KdlToken, String] = Err("Unterminated string")
   while true {
     match current.cursor.peek() {
-      Some(ch) => {
+      Some(ch) =>
         if ch == "\"" {
           let (_, new_cursor) = current.cursor.advance()
           result = Ok(String(buf.to_string()))
@@ -271,7 +335,7 @@ fn Lexer::read_string(self : Lexer) -> (Result[KdlToken, String], Lexer) {
                 let hex_buf = @buffer.new()
                 while true {
                   match current.cursor.peek() {
-                    Some(h) => {
+                    Some(h) =>
                       if h == "}" {
                         let (_, new_cursor) = current.cursor.advance()
                         current = { cursor: new_cursor, errors: current.errors }
@@ -284,7 +348,6 @@ fn Lexer::read_string(self : Lexer) -> (Result[KdlToken, String], Lexer) {
                         result = Err("Invalid hex digit in unicode escape")
                         break
                       }
-                    }
                     None => {
                       result = Err("Unterminated unicode escape")
                       break
@@ -297,14 +360,13 @@ fn Lexer::read_string(self : Lexer) -> (Result[KdlToken, String], Lexer) {
                 // ws-escape: skip whitespace until newline
                 while true {
                   match current.cursor.peek() {
-                    Some(ws) => {
+                    Some(ws) =>
                       if is_whitespace(ws) || is_newline(ws) {
                         let (_, new_cursor) = current.cursor.advance()
                         current = { cursor: new_cursor, errors: current.errors }
                       } else {
                         break
                       }
-                    }
                     None => break
                   }
                 }
@@ -331,7 +393,6 @@ fn Lexer::read_string(self : Lexer) -> (Result[KdlToken, String], Lexer) {
           let (_, new_cursor) = current.cursor.advance()
           current = { cursor: new_cursor, errors: current.errors }
         }
-      }
       None => {
         result = Err("Unterminated string")
         break
@@ -359,7 +420,8 @@ fn Lexer::read_raw_string(self : Lexer) -> (Result[KdlToken, String], Lexer) {
   current = { cursor: new_cursor, errors: current.errors }
   let buf = @buffer.new()
   // Check for multiline
-  if current.cursor.peek() == Some("\"") && current.cursor.peek_at(1) == Some("\"") {
+  if current.cursor.peek() == Some("\"") &&
+    current.cursor.peek_at(1) == Some("\"") {
     let (_, new_cursor) = current.cursor.advance()
     let (_, new_cursor2) = new_cursor.advance()
     current = { cursor: new_cursor2, errors: current.errors }
@@ -369,14 +431,16 @@ fn Lexer::read_raw_string(self : Lexer) -> (Result[KdlToken, String], Lexer) {
       match current.cursor.peek() {
         Some(ch) => {
           if ch == "\"" {
-            if current.cursor.peek_at(1) == Some("\"") && current.cursor.peek_at(2) == Some("\"") {
+            if current.cursor.peek_at(1) == Some("\"") &&
+              current.cursor.peek_at(2) == Some("\"") {
               let (_, new_cursor) = current.cursor.advance()
               let (_, new_cursor2) = new_cursor.advance()
               let (_, new_cursor3) = new_cursor2.advance()
               current = { cursor: new_cursor3, errors: current.errors }
               // Check closing hashes
               let mut close_hash = 0
-              while current.cursor.peek() == Some("#") && close_hash < hash_count {
+              while current.cursor.peek() == Some("#") &&
+                    close_hash < hash_count {
                 let (_, new_cursor) = current.cursor.advance()
                 current = { cursor: new_cursor, errors: current.errors }
                 close_hash = close_hash + 1
@@ -438,7 +502,10 @@ fn Lexer::read_raw_string(self : Lexer) -> (Result[KdlToken, String], Lexer) {
 }
 
 ///|
-fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], Lexer) {
+fn Lexer::read_number(
+  self : Lexer,
+  start : Int,
+) -> (Result[KdlToken, String], Lexer) {
   let mut is_negative = false
   let mut current = self
   if current.cursor.peek() == Some("-") {
@@ -459,7 +526,7 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
         let num_buf = @buffer.new()
         while true {
           match current.cursor.peek() {
-            Some(h) => {
+            Some(h) =>
               if is_hex_digit(h) {
                 num_buf.write_string(h)
                 let (_, new_cursor) = current.cursor.advance()
@@ -470,7 +537,6 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
               } else {
                 break
               }
-            }
             None => break
           }
         }
@@ -488,7 +554,7 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
         let num_buf = @buffer.new()
         while true {
           match current.cursor.peek() {
-            Some(o) => {
+            Some(o) =>
               if o >= "0" && o <= "7" {
                 num_buf.write_string(o)
                 let (_, new_cursor) = current.cursor.advance()
@@ -499,7 +565,6 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
               } else {
                 break
               }
-            }
             None => break
           }
         }
@@ -516,7 +581,7 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
         let num_buf = @buffer.new()
         while true {
           match current.cursor.peek() {
-            Some(b) => {
+            Some(b) =>
               if b == "0" || b == "1" {
                 num_buf.write_string(b)
                 let (_, new_cursor) = current.cursor.advance()
@@ -527,7 +592,6 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
               } else {
                 break
               }
-            }
             None => break
           }
         }
@@ -537,10 +601,9 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
         }
         return (Ok(Integer(0L)), current)
       }
-      _ => {
+      _ =>
         // Decimal number
         ignore({})
-      }
     }
   }
   // Read decimal number
@@ -549,7 +612,7 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
   let mut has_exp = false
   while true {
     match current.cursor.peek() {
-      Some(d) => {
+      Some(d) =>
         if is_digit(d) {
           num_buf.write_string(d)
           let (_, new_cursor) = current.cursor.advance()
@@ -560,7 +623,7 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
         } else if d == "." && !has_dot && !has_exp {
           // Check if next char is digit (not another dot)
           match current.cursor.peek_at(1) {
-            Some(next) => {
+            Some(next) =>
               if is_digit(next) {
                 has_dot = true
                 num_buf.write_string(d)
@@ -569,7 +632,6 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
               } else {
                 break
               }
-            }
             None => break
           }
         } else if (d == "e" || d == "E") && !has_exp {
@@ -579,19 +641,17 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
           current = { cursor: new_cursor, errors: current.errors }
           // Optional sign
           match current.cursor.peek() {
-            Some(s) => {
+            Some(s) =>
               if is_sign(s) {
                 num_buf.write_string(s)
                 let (_, new_cursor) = current.cursor.advance()
                 current = { cursor: new_cursor, errors: current.errors }
               }
-            }
             None => ()
           }
         } else {
           break
         }
-      }
       None => break
     }
   }
@@ -609,12 +669,15 @@ fn Lexer::read_number(self : Lexer, start : Int) -> (Result[KdlToken, String], L
 }
 
 ///|
-fn Lexer::read_identifier(self : Lexer, start : Int) -> (Result[KdlToken, String], Lexer) {
+fn Lexer::read_identifier(
+  self : Lexer,
+  start : Int,
+) -> (Result[KdlToken, String], Lexer) {
   let buf = @buffer.new()
   let mut current = self
   while true {
     match current.cursor.peek() {
-      Some(ch) => {
+      Some(ch) =>
         if is_identifier_char(ch) {
           buf.write_string(ch)
           let (_, new_cursor) = current.cursor.advance()
@@ -622,7 +685,6 @@ fn Lexer::read_identifier(self : Lexer, start : Int) -> (Result[KdlToken, String
         } else {
           break
         }
-      }
       None => break
     }
   }
@@ -635,9 +697,17 @@ fn Lexer::read_identifier(self : Lexer, start : Int) -> (Result[KdlToken, String
   } else if ident == "null" {
     (Ok(Null), current)
   } else if ident == "inf" {
-    (Err("'inf' is not allowed as an identifier; use #inf for infinity"), current)
+    (
+      Err("'inf' is not allowed as an identifier; use #inf for infinity"),
+      current,
+    )
   } else if ident == "-inf" {
-    (Err("'-inf' is not allowed as an identifier; use #-inf for negative infinity"), current)
+    (
+      Err(
+        "'-inf' is not allowed as an identifier; use #-inf for negative infinity",
+      ),
+      current,
+    )
   } else if ident == "nan" {
     (Err("'nan' is not allowed as an identifier; use #nan for NaN"), current)
   } else {
@@ -646,13 +716,16 @@ fn Lexer::read_identifier(self : Lexer, start : Int) -> (Result[KdlToken, String
 }
 
 ///|
-fn Lexer::read_keyword(self : Lexer, start : Int) -> (Result[KdlToken, String], Lexer) {
+fn Lexer::read_keyword(
+  self : Lexer,
+  start : Int,
+) -> (Result[KdlToken, String], Lexer) {
   let (_, new_cursor) = self.cursor.advance() // skip #
   let mut current = { cursor: new_cursor, errors: self.errors }
   let buf = @buffer.new()
   while true {
     match current.cursor.peek() {
-      Some(ch) => {
+      Some(ch) =>
         if is_identifier_char(ch) {
           buf.write_string(ch)
           let (_, new_cursor) = current.cursor.advance()
@@ -660,7 +733,6 @@ fn Lexer::read_keyword(self : Lexer, start : Int) -> (Result[KdlToken, String], 
         } else {
           break
         }
-      }
       None => break
     }
   }
@@ -687,80 +759,149 @@ fn Lexer::next_token(self : Lexer) -> (Result[SpannedToken, String], Lexer) {
   let current = self.skip_whitespace()
   let start = current.cursor.pos
   match current.cursor.peek() {
-    Some(ch) => {
+    Some(ch) =>
       if ch == "\"" {
         let (token_result, new_lexer) = current.read_string()
         match token_result {
-          Ok(token) => (Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))), new_lexer)
+          Ok(token) =>
+            (
+              Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))),
+              new_lexer,
+            )
           Err(e) => (Err(e), new_lexer)
         }
-      } else if ch == "r" && (current.cursor.peek_at(1) == Some("#") || current.cursor.peek_at(1) == Some("\"")) {
+      } else if ch == "r" &&
+        (
+          current.cursor.peek_at(1) == Some("#") ||
+          current.cursor.peek_at(1) == Some("\"")
+        ) {
         let (token_result, new_lexer) = current.read_raw_string()
         match token_result {
-          Ok(token) => (Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))), new_lexer)
+          Ok(token) =>
+            (
+              Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))),
+              new_lexer,
+            )
           Err(e) => (Err(e), new_lexer)
         }
       } else if ch == "#" {
         let (token_result, new_lexer) = current.read_keyword(start)
         match token_result {
-          Ok(token) => (Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))), new_lexer)
+          Ok(token) =>
+            (
+              Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))),
+              new_lexer,
+            )
           Err(e) => (Err(e), new_lexer)
         }
-      } else if is_digit(ch) || (is_sign(ch) && {
-        let next = current.cursor.peek_at(1)
-        is_digit(match next { Some(c) => c; None => "0" })
-      }) {
+      } else if is_digit(ch) ||
+        (
+          is_sign(ch) &&
+          ({
+            let next = current.cursor.peek_at(1)
+            is_digit(
+              match next {
+                Some(c) => c
+                None => "0"
+              },
+            )
+          })
+        ) {
         let (token_result, new_lexer) = current.read_number(start)
         match token_result {
-          Ok(token) => (Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))), new_lexer)
+          Ok(token) =>
+            (
+              Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))),
+              new_lexer,
+            )
           Err(e) => (Err(e), new_lexer)
         }
-      } else if ch == "." && {
-        let next = current.cursor.peek_at(1)
-        is_digit(match next { Some(c) => c; None => "0" })
-      } {
+      } else if ch == "." &&
+        ({
+          let next = current.cursor.peek_at(1)
+          is_digit(
+            match next {
+              Some(c) => c
+              None => "0"
+            },
+          )
+        }) {
         let (token_result, new_lexer) = current.read_number(start)
         match token_result {
-          Ok(token) => (Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))), new_lexer)
+          Ok(token) =>
+            (
+              Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))),
+              new_lexer,
+            )
           Err(e) => (Err(e), new_lexer)
         }
       } else if is_identifier_char(ch) {
         let (token_result, new_lexer) = current.read_identifier(start)
         match token_result {
-          Ok(token) => (Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))), new_lexer)
+          Ok(token) =>
+            (
+              Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))),
+              new_lexer,
+            )
           Err(e) => (Err(e), new_lexer)
         }
       } else if ch == "{" {
         let (_, new_cursor) = current.cursor.advance()
         let new_lexer = { cursor: new_cursor, errors: current.errors }
-        (Ok(SpannedToken::new(LBrace, new_lexer.cursor.current_span(start))), new_lexer)
+        (
+          Ok(SpannedToken::new(LBrace, new_lexer.cursor.current_span(start))),
+          new_lexer,
+        )
       } else if ch == "}" {
         let (_, new_cursor) = current.cursor.advance()
         let new_lexer = { cursor: new_cursor, errors: current.errors }
-        (Ok(SpannedToken::new(RBrace, new_lexer.cursor.current_span(start))), new_lexer)
+        (
+          Ok(SpannedToken::new(RBrace, new_lexer.cursor.current_span(start))),
+          new_lexer,
+        )
       } else if ch == "(" {
         let (_, new_cursor) = current.cursor.advance()
         let new_lexer = { cursor: new_cursor, errors: current.errors }
-        (Ok(SpannedToken::new(LParen, new_lexer.cursor.current_span(start))), new_lexer)
+        (
+          Ok(SpannedToken::new(LParen, new_lexer.cursor.current_span(start))),
+          new_lexer,
+        )
       } else if ch == ")" {
         let (_, new_cursor) = current.cursor.advance()
         let new_lexer = { cursor: new_cursor, errors: current.errors }
-        (Ok(SpannedToken::new(RParen, new_lexer.cursor.current_span(start))), new_lexer)
+        (
+          Ok(SpannedToken::new(RParen, new_lexer.cursor.current_span(start))),
+          new_lexer,
+        )
       } else if ch == "=" {
         let (_, new_cursor) = current.cursor.advance()
         let new_lexer = { cursor: new_cursor, errors: current.errors }
-        (Ok(SpannedToken::new(Eq, new_lexer.cursor.current_span(start))), new_lexer)
+        (
+          Ok(SpannedToken::new(Eq, new_lexer.cursor.current_span(start))),
+          new_lexer,
+        )
       } else if ch == ";" {
         let (_, new_cursor) = current.cursor.advance()
         let new_lexer = { cursor: new_cursor, errors: current.errors }
-        (Ok(SpannedToken::new(Semicolon, new_lexer.cursor.current_span(start))), new_lexer)
+        (
+          Ok(SpannedToken::new(Semicolon, new_lexer.cursor.current_span(start))),
+          new_lexer,
+        )
       } else if ch == "/" {
         match current.cursor.peek_at(1) {
           Some("-") => {
             let (_, new_cursor) = current.cursor.advance()
             let (_, new_cursor2) = new_cursor.advance()
             let new_lexer = { cursor: new_cursor2, errors: current.errors }
-            (Ok(SpannedToken::new(Slashdash, new_lexer.cursor.current_span(start))), new_lexer)
+            (
+              Ok(
+                SpannedToken::new(
+                  Slashdash,
+                  new_lexer.cursor.current_span(start),
+                ),
+              ),
+              new_lexer,
+            )
           }
           Some("/") => {
             let (_, new_cursor) = current.cursor.advance()
@@ -774,9 +915,7 @@ fn Lexer::next_token(self : Lexer) -> (Result[SpannedToken, String], Lexer) {
             let new_lexer = { cursor: new_cursor2, errors: current.errors }
             new_lexer.skip_multi_line_comment().next_token()
           }
-          _ => {
-            (Err("Unexpected character: /"), current)
-          }
+          _ => (Err("Unexpected character: /"), current)
         }
       } else if ch == "\\" {
         // Line continuation
@@ -785,7 +924,7 @@ fn Lexer::next_token(self : Lexer) -> (Result[SpannedToken, String], Lexer) {
         // Skip whitespace
         while true {
           match new_lexer.cursor.peek() {
-            Some(ws) => {
+            Some(ws) =>
               if is_whitespace(ws) {
                 let (_, new_cursor) = new_lexer.cursor.advance()
                 new_lexer = { cursor: new_cursor, errors: new_lexer.errors }
@@ -797,37 +936,43 @@ fn Lexer::next_token(self : Lexer) -> (Result[SpannedToken, String], Lexer) {
               } else {
                 break
               }
-            }
             None => break
           }
         }
         // Expect newline or EOF
         match new_lexer.cursor.peek() {
-          Some(nl) => {
+          Some(nl) =>
             if is_newline(nl) {
               let (_, new_cursor) = new_lexer.cursor.advance()
               new_lexer = { cursor: new_cursor, errors: new_lexer.errors }
             } else {
-              return (Err("Expected newline after line continuation"), new_lexer)
+              return (
+                Err("Expected newline after line continuation"),
+                new_lexer,
+              )
             }
-          }
           None => ()
         }
         new_lexer.next_token()
       } else if is_newline(ch) {
         let (_, new_cursor) = current.cursor.advance()
         let new_lexer = { cursor: new_cursor, errors: current.errors }
-        (Ok(SpannedToken::new(Newline, new_lexer.cursor.current_span(start))), new_lexer)
+        (
+          Ok(SpannedToken::new(Newline, new_lexer.cursor.current_span(start))),
+          new_lexer,
+        )
       } else {
         (Err("Unexpected character: " + ch), current)
       }
-    }
-    None => (Ok(SpannedToken::new(Eof, current.cursor.current_span(start))), current)
+    None =>
+      (Ok(SpannedToken::new(Eof, current.cursor.current_span(start))), current)
   }
 }
 
 ///|
-pub fn tokenize(input : String) -> Result[Array[SpannedToken], Array[KdlDiagnostic]] {
+pub fn tokenize(
+  input : String,
+) -> Result[Array[SpannedToken], Array[KdlDiagnostic]] {
   let mut lexer = Lexer::new(input)
   let tokens = Array::new()
   while true {
