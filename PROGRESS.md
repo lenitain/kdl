@@ -54,7 +54,7 @@ kdl/
 │       ├── main_test.mbt                # Demo tests
 │       └── moon.pkg.json                # Main package config
 │
-├── test suite (target 5000+ lines)
+├── test
 │   ├── kdl_test.mbt                     # Core type tests
 │   ├── kdl_wbtest.mbt                   # White box tests
 │   ├── parser_test.mbt                  # Parser tests
@@ -202,7 +202,7 @@ kdl/
 │       ├── lexer_test.mbt               — Lexer unit tests (66 tests) ✅
 │       └── moon.pkg.json                — Tokenizer package config ✅
 │
-└── test suite
+└── test
     ├── kdl_test.mbt                     — Core type tests (35 tests) ✅
     ├── kdl_wbtest.mbt                   — White box tests
     └── internal/tokenize/lexer_test.mbt — Lexer unit tests (66 tests) ✅
