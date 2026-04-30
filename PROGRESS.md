@@ -17,6 +17,7 @@ kdl/
 ├── types.mbt                            # KdlValue, KdlIdentifier, KdlEntry, KdlNode, KdlDocument
 ├── error.mbt                            # KdlError, KdlDiagnostic, KdlSeverity
 ├── format.mbt                           # KDL serialization/formatting output
+├── format_test.mbt                      # Format tests
 ├── kdl_test.mbt                         # Root package blackbox tests
 ├── kdl_wbtest.mbt                       # Root package whitebox tests
 ├── moon.mod.json                        # Module config
@@ -27,22 +28,22 @@ kdl/
 │
 ├── internal/                            # Internal modules
 │   └── tokenize/                        # Lexical analysis
-│       ├── tokenize.mbt                 # Main tokenizer implementation
 │       ├── token.mbt                    # Token type definition
+│       ├── tokenize.mbt                 # Main tokenizer implementation
 │       ├── lexer_test.mbt               # Lexer unit tests
-│       ├── lexer_bug_test.mbt           # Lexer regression tests
 │       └── moon.pkg                     # Tokenizer package config
 │
 ├── parser/                              # Parser
-│   ├── parser.mbt                       # v1/v2 parsing logic
-│   ├── v1_compat.mbt                    # v1 compatibility adapter
+│   ├── parser.mbt                       # v1 parsing logic
 │   ├── parser_test.mbt                  # Parser unit tests
 │   └── moon.pkg                         # Parser package config
 │
-├── query/                               # KQL query engine (Phase 6)
-│   ├── query.mbt                        # Query execution
-│   ├── query_parser.mbt                 # KQL selector parsing
-│   ├── query_test.mbt                   # Query tests
+├── query/                               # KQL query engine
+│   ├── query_token.mbt                  # KQL token types
+│   ├── query_tokenize.mbt               # KQL tokenizer
+│   ├── query_parser.mbt                 # KQL selector/matcher parsing
+│   ├── query_engine.mbt                 # Query execution engine
+│   ├── query_test.mbt                   # KQL tests
 │   └── moon.pkg                         # Query package config
 │
 ├── schema/                              # Schema validation (Phase 7)
@@ -191,16 +192,16 @@ kdl/
 │   ├── lexer_test.mbt   — Lexer unit tests (66 tests) ✅
 │   └── moon.pkg         — Tokenizer package config ✅
 │
-└── parser/              — Parser ✅
-    ├── parser.mbt       — v1 parsing logic ✅
-    ├── parser_test.mbt  — Parser unit tests (5 tests) ✅
-    └── moon.pkg         — Parser package config ✅
-
-├── query/               — KQL query engine ✅
-│   ├── query_token.mbt  — KQL token types (27 variants) ✅
-│   ├── query_tokenize.mbt — KQL tokenizer ✅
-│   ├── query_parser.mbt — KQL parser (AST + parsing) ✅
-│   ├── query_engine.mbt — Query execution engine ✅
-│   ├── query_test.mbt   — 194 tests (tokenizer + parser + engine) ✅
-│   └── moon.pkg         — Query package config ✅
+├── parser/              — Parser ✅
+│   ├── parser.mbt       — v1 parsing logic ✅
+│   ├── parser_test.mbt  — Parser unit tests (5 tests) ✅
+│   └── moon.pkg         — Parser package config ✅
+│
+└── query/               — KQL query engine ✅
+    ├── query_token.mbt  — KQL token types (27 variants) ✅
+    ├── query_tokenize.mbt — KQL tokenizer ✅
+    ├── query_parser.mbt — KQL parser (AST + parsing) ✅
+    ├── query_engine.mbt — Query execution engine ✅
+    ├── query_test.mbt   — 194 tests (tokenizer + parser + engine) ✅
+    └── moon.pkg         — Query package config ✅
 ```
