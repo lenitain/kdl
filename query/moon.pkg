@@ -1,0 +1,9 @@
+import {
+  "lenitain/kdl",
+  "moonbitlang/core/buffer",
+}
+
+options(
+  name: "lenitain/kdl/query",
+  version: "0.1.0",
+)

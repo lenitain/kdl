@@ -1,0 +1,132 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "lenitain/kdl/query"
+
+import {
+  "lenitain/kdl",
+}
+
+// Values
+pub fn parse_kql(String) -> Result[KqlQuery, String]
+
+pub fn query(@kdl.KdlDocument, String) -> Result[Array[@kdl.KdlNode], String]
+
+pub fn tokenize_kql(String) -> Result[Array[KqlSpannedToken], Array[String]]
+
+// Errors
+
+// Types and methods
+pub enum KqlAccessor {
+  Val(Int)
+  Prop(String)
+  Name
+  Tag
+  Values
+  Props
+  PropertyKey(String)
+} derive(Eq)
+pub impl Show for KqlAccessor
+
+pub enum KqlComparison {
+  Eq(KqlValue)
+  Neq(KqlValue)
+  Gt(KqlValue)
+  Lt(KqlValue)
+  Gte(KqlValue)
+  Lte(KqlValue)
+  CaretEq(KqlValue)
+  DollarEq(KqlValue)
+  StarEq(KqlValue)
+} derive(Eq)
+pub impl Show for KqlComparison
+
+pub enum KqlFilter {
+  Top
+  Matchers(Array[KqlMatcher])
+} derive(Eq)
+pub impl Show for KqlFilter
+
+pub enum KqlMatcher {
+  TypeAnnotation(String?)
+  NodeName(String)
+  StringLiteral(String)
+  AccessorMatcher(KqlAccessor, KqlComparison?)
+} derive(Eq)
+pub impl Show for KqlMatcher
+
+pub enum KqlQuery {
+  Single(KqlSelector)
+  Union(KqlQuery, KqlSelector)
+} derive(Eq)
+pub impl Show for KqlQuery
+
+pub enum KqlSelector {
+  Filter(KqlFilter)
+  Child(KqlSelector, KqlFilter)
+  Descendant(KqlSelector, KqlFilter)
+  NextSibling(KqlSelector, KqlFilter)
+  LaterSibling(KqlSelector, KqlFilter)
+} derive(Eq)
+pub impl Show for KqlSelector
+
+pub struct KqlSourceSpan {
+  start : Int
+  end : Int
+} derive(Eq)
+pub fn KqlSourceSpan::new(Int, Int) -> Self
+pub impl Show for KqlSourceSpan
+
+pub struct KqlSpannedToken {
+  token : KqlToken
+  span : KqlSourceSpan
+} derive(Eq)
+pub fn KqlSpannedToken::new(KqlToken, KqlSourceSpan) -> Self
+pub impl Show for KqlSpannedToken
+
+pub(all) enum KqlToken {
+  Ident(String)
+  String(String)
+  Integer(Int64)
+  Float(Double)
+  Bool(Bool)
+  Null
+  Inf
+  NegInf
+  Nan
+  Gt
+  GtGt
+  Plus
+  PlusPlus
+  PipePipe
+  LBracket
+  RBracket
+  LParen
+  RParen
+  Eq
+  Neq
+  Lt
+  Gte
+  Lte
+  CaretEq
+  DollarEq
+  StarEq
+  Eof
+} derive(Eq)
+pub impl Show for KqlToken
+
+pub enum KqlValue {
+  String(String)
+  Integer(Int64)
+  Float(Double)
+  Bool(Bool)
+  Null
+  Inf
+  NegInf
+  Nan
+  TypeAnnotation(String)
+} derive(Eq)
+pub impl Show for KqlValue
+
+// Type aliases
+
+// Traits
+
