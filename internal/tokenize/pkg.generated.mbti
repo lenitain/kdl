@@ -1,0 +1,55 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "lenitain/kdl/internal/tokenize"
+
+import {
+  "lenitain/kdl",
+}
+
+// Values
+pub fn tokenize(String) -> Result[Array[SpannedToken], Array[@kdl.KdlDiagnostic]]
+
+// Errors
+
+// Types and methods
+pub(all) enum KdlToken {
+  Ident(String)
+  String(String)
+  Integer(Int64)
+  Float(Double)
+  Bool(Bool)
+  Null
+  Inf
+  NegInf
+  Nan
+  LBrace
+  RBrace
+  LParen
+  RParen
+  Eq
+  Slashdash
+  Semicolon
+  Newline
+  Eof
+} derive(Eq)
+pub impl Show for KdlToken
+
+pub struct SourceSpan {
+  start : Int
+  end : Int
+  line : Int
+  col : Int
+} derive(Eq)
+pub fn SourceSpan::new(Int, Int, Int, Int) -> Self
+pub impl Show for SourceSpan
+
+pub struct SpannedToken {
+  token : KdlToken
+  span : SourceSpan
+} derive(Eq)
+pub fn SpannedToken::new(KdlToken, SourceSpan) -> Self
+pub impl Show for SpannedToken
+
+// Type aliases
+
+// Traits
+
