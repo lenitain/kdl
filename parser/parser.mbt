@@ -333,7 +333,11 @@ fn Parser::parse_document(self : Parser) -> (Parser, KdlDocument) {
   let parser = self.skip_newlines()
   let doc = KdlDocument::new()
   // Try to parse version marker
-  let (parser, _version) = parser.parse_version_marker()
+  let (parser, version) = parser.parse_version_marker()
+  match version {
+    Some(v) => doc.set_version(v)
+    None => ()
+  }
   let mut current_parser = parser.skip_newlines()
   while true {
     let current = current_parser.current()

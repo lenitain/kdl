@@ -20,11 +20,14 @@ pub impl Show for KdlDiagnostic
 
 pub struct KdlDocument {
   nodes : Array[KdlNode]
+  mut version : Int?
 }
 pub fn KdlDocument::get(Self, String) -> KdlNode?
+pub fn KdlDocument::get_version(Self) -> Int?
 pub fn KdlDocument::new() -> Self
 pub fn KdlDocument::nodes(Self) -> Array[KdlNode]
 pub fn KdlDocument::push(Self, KdlNode) -> Unit
+pub fn KdlDocument::set_version(Self, Int) -> Unit
 pub fn KdlDocument::to_kdl_string(Self) -> String
 pub fn KdlDocument::to_kdl_string_formatted(Self, Int) -> String
 pub impl Eq for KdlDocument

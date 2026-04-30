@@ -302,3 +302,36 @@ test "parse_v2 basic" {
   assert_true(node.entries[0].value is Bool(true))
   assert_true(node.entries[1].value is Bool(false))
 }
+
+///|
+test "version marker v1 stored" {
+  let doc = parse("/- kdl-version 1\nnode \"value\"").unwrap()
+  assert_eq(doc.get_version(), Some(1))
+  assert_eq(doc.nodes().length(), 1)
+}
+
+///|
+test "version marker v2 stored" {
+  let doc = parse("/- kdl-version 2\nnode \"value\"").unwrap()
+  assert_eq(doc.get_version(), Some(2))
+  assert_eq(doc.nodes().length(), 1)
+}
+
+///|
+test "no version marker returns None" {
+  let doc = parse("node \"value\"").unwrap()
+  assert_eq(doc.get_version(), None)
+}
+
+///|
+test "version marker v1 with leading whitespace" {
+  let doc = parse("  /- kdl-version 1\nnode").unwrap()
+  assert_eq(doc.get_version(), Some(1))
+}
+
+///|
+test "version marker followed by multiple nodes" {
+  let doc = parse("/- kdl-version 1\nfoo\nbar").unwrap()
+  assert_eq(doc.get_version(), Some(1))
+  assert_eq(doc.nodes().length(), 2)
+}

@@ -110,7 +110,7 @@ Migrate from current flat structure to target structure:
 - [x] Null: `null`
 - [x] Type annotation: `(bare-id)`
 - [x] Node parsing: name + entries + children `{}`
-- [ ] Document parsing: version marker `/kdl-version 1`
+- [x] Document parsing: version marker `/kdl-version 1`
 - [x] End-to-end parsing of a complete KDL v1 document
 
 ## Phase 4: Parser — v2 Support

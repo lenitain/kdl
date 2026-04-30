@@ -228,7 +228,17 @@ test "KdlDocument Eq" {
 ///|
 test "KdlDocument Debug" {
   let doc = KdlDocument::new()
-  inspect(doc, content="KdlDocument { nodes: [] }")
+  inspect(doc, content="KdlDocument { version: None, nodes: [] }")
+}
+
+///|
+test "KdlDocument version getter/setter" {
+  let doc = KdlDocument::new()
+  assert_eq(doc.get_version(), None)
+  doc.set_version(1)
+  assert_eq(doc.get_version(), Some(1))
+  doc.set_version(2)
+  assert_eq(doc.get_version(), Some(2))
 }
 
 ///|

@@ -315,23 +315,26 @@ pub fn KdlNode::full(
 ///|
 pub struct KdlDocument {
   nodes : Array[KdlNode]
+  mut version : Int?
 }
 
 ///|
 pub impl Eq for KdlDocument with equal(self, other) -> Bool {
-  nodes_eq(self.nodes, other.nodes)
+  self.version == other.version && nodes_eq(self.nodes, other.nodes)
 }
 
 ///|
 pub impl Show for KdlDocument with output(self, logger) {
-  logger.write_string("KdlDocument { nodes: ")
+  logger.write_string("KdlDocument { version: ")
+  logger.write_object(self.version)
+  logger.write_string(", nodes: ")
   logger.write_object(self.nodes)
   logger.write_string(" }")
 }
 
 ///|
 pub fn KdlDocument::new() -> KdlDocument {
-  { nodes: [] }
+  { nodes: [], version: None }
 }
 
 ///|
@@ -352,4 +355,14 @@ pub fn KdlDocument::push(self : KdlDocument, node : KdlNode) -> Unit {
 ///|
 pub fn KdlDocument::nodes(self : KdlDocument) -> Array[KdlNode] {
   self.nodes
+}
+
+///|
+pub fn KdlDocument::get_version(self : KdlDocument) -> Int? {
+  self.version
+}
+
+///|
+pub fn KdlDocument::set_version(self : KdlDocument, version : Int) -> Unit {
+  self.version = Some(version)
 }
