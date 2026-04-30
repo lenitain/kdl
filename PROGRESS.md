@@ -9,7 +9,7 @@ Implement a complete KDL document language library for [MoonBit](https://moonbit
 
 ## Directory Structure Plan
 
-Referencing toml-parser project structure, final goal:
+Project structure, final goal:
 
 ```
 kdl/
