@@ -363,6 +363,6 @@ pub fn KdlDocument::get_version(self : KdlDocument) -> Int? {
 }
 
 ///|
-pub fn KdlDocument::set_version(self : KdlDocument, version : Int) -> Unit {
-  self.version = Some(version)
+pub fn KdlDocument::set_version(self : KdlDocument, version : Int?) -> Unit {
+  self.version = version
 }
