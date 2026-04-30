@@ -70,7 +70,7 @@ Migrate from current flat structure to target structure:
 | Phase 5 | Create `format.mbt` (root directory) | ✅ Completed |
 | Phase 6 | Create `query/` subpackage | ✅ Completed |
 | Phase 7 | Create `schema/` subpackage | ✅ Completed (248 tests) |
-| Phase 8 | Create `cmd/main/` CLI tool | ⏳ Pending |
+| Phase 8 | Create `cmd/main/` CLI tool | ✅ Completed |
 
 ---
 
@@ -165,7 +165,7 @@ Migrate from current flat structure to target structure:
 
 ## Phase 8: Tools and Polish
 - [ ] Autoformat
-- [ ] Create `cmd/main/` CLI tool (parse, check, format)
+- [x] Create `cmd/main/` CLI tool (parse, check, format)
 - [ ] Complete documentation (README.mbt.md)
 - [ ] MoonBit package publication
 
