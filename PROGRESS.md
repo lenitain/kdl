@@ -114,20 +114,20 @@ Migrate from current flat structure to target structure:
 - [x] End-to-end parsing of a complete KDL v1 document
 
 ## Phase 4: Parser — v2 Support
-- [ ] Identifier string (bare word)
-- [ ] Multiline string `"""..."""`
-- [ ] New escape: `\s`, escaped whitespace
-- [ ] Keyword numbers: `#inf`, `#-inf`, `#nan`
-- [ ] `#true`/`#false`/`#null`
-- [ ] Type annotation supports strings: `(string)` with internal whitespace
-- [ ] Node name/property key supports arbitrary string types
-- [ ] Slashdash supports child node blocks
-- [ ] Version marker `/kdl-version 2`
-- [ ] Complete KDL v2 document parsing
+- [x] Identifier string (bare word)
+- [x] Multiline string `"""..."""`
+- [x] New escape: `\s`, escaped whitespace
+- [x] Keyword numbers: `#inf`, `#-inf`, `#nan`
+- [x] `#true`/`#false`/`#null`
+- [x] Type annotation supports strings: `(string)` with internal whitespace
+- [x] Node name/property key supports arbitrary string types
+- [x] Slashdash supports child node blocks
+- [x] Version marker `/kdl-version 2`
+- [x] Complete KDL v2 document parsing
 
 ### v1/v2 Compatibility
-- [ ] Heuristic detection of v1/v2 documents
-- [ ] Unified internal representation (v1 values converted to v2 representation)
+- [x] Heuristic detection of v1/v2 documents
+- [x] Unified internal representation (v1 values converted to v2 representation)
 
 ## Phase 5: Serialization (KDL Output) ✅ Completed
 - [x] `KdlDocument.to_string()` / `show()` — basic serialization

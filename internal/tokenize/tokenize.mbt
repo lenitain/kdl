@@ -321,6 +321,8 @@ fn Lexer::read_string(self : Lexer) -> (Result[KdlToken, String], Lexer) {
                 buf.write_string("\r")
               } else if esc == "t" {
                 buf.write_string("\t")
+              } else if esc == "s" {
+                buf.write_string(" ")
               } else if esc == "/" {
                 buf.write_string("/")
               } else if esc == "u" {
@@ -400,6 +402,154 @@ fn Lexer::read_string(self : Lexer) -> (Result[KdlToken, String], Lexer) {
     }
   }
   (result, current)
+}
+
+///|
+fn Lexer::read_multiline_string(
+  self : Lexer,
+) -> (Result[KdlToken, String], Lexer) {
+  let start = self.cursor.pos
+  let (_, new_cursor) = self.cursor.advance() // skip first "
+  let (_, new_cursor2) = new_cursor.advance() // skip second "
+  let (_, new_cursor3) = new_cursor2.advance() // skip third "
+  let mut current = { cursor: new_cursor3, errors: self.errors }
+  // Expect newline after opening """
+  match current.cursor.peek() {
+    Some(ch) =>
+      if !is_newline(ch) {
+        return (Err("Expected newline after opening \"\"\""), current)
+      }
+    None => return (Err("Unterminated multiline string"), current)
+  }
+  // Skip the newline after opening """
+  let (_, new_cursor) = current.cursor.advance()
+  current = { cursor: new_cursor, errors: current.errors }
+  // Collect all lines
+  let lines : Array[String] = []
+  let mut current_line = @buffer.new()
+  let mut found_close = false
+  while true {
+    match current.cursor.peek() {
+      Some(ch) =>
+        if ch == "\"" {
+          // Check for closing """
+          if current.cursor.peek_at(1) == Some("\"") &&
+            current.cursor.peek_at(2) == Some("\"") {
+            // Found closing """
+            // Current line is the last line (whitespace only)
+            let last_line = current_line.to_string()
+            // Verify last line is whitespace only
+            let mut is_ws_only = true
+            for c in last_line {
+              if !is_whitespace(c.to_string()) && !is_newline(c.to_string()) {
+                is_ws_only = false
+                break
+              }
+            }
+            if !is_ws_only {
+              return (
+                Err("Closing \"\"\" must be on a line with only whitespace"),
+                current,
+              )
+            }
+            // Skip closing """
+            let (_, new_cursor) = current.cursor.advance()
+            let (_, new_cursor2) = new_cursor.advance()
+            let (_, new_cursor3) = new_cursor2.advance()
+            current = { cursor: new_cursor3, errors: current.errors }
+            found_close = true
+            break
+          } else {
+            current_line.write_string(ch)
+            let (_, new_cursor) = current.cursor.advance()
+            current = { cursor: new_cursor, errors: current.errors }
+          }
+        } else if is_newline(ch) {
+          // End of line
+          lines.push(current_line.to_string())
+          // Create a new buffer for the next line
+          current_line = @buffer.new()
+          let (_, new_cursor) = current.cursor.advance()
+          current = { cursor: new_cursor, errors: current.errors }
+        } else {
+          current_line.write_string(ch)
+          let (_, new_cursor) = current.cursor.advance()
+          current = { cursor: new_cursor, errors: current.errors }
+        }
+      None => break
+    }
+  }
+  if !found_close {
+    return (Err("Unterminated multiline string"), current)
+  }
+  // Dedent: find the common prefix from the last line (before closing """)
+  // The last line specifies the whitespace prefix to remove
+  // Note: current_line contains the whitespace before closing """
+  let last_line = current_line.to_string()
+  // Find the prefix (whitespace from last line)
+  let prefix = @buffer.new()
+  for c in last_line {
+    if is_whitespace(c.to_string()) {
+      prefix.write_string(c.to_string())
+    } else {
+      break
+    }
+  }
+  let prefix_str = prefix.to_string()
+  let prefix_len = prefix_str.length()
+  // Build the result by removing prefix from each line
+  let result_buf = @buffer.new()
+  let mut first = true
+  let line_count = lines.length()
+  let mut idx = 0
+  while idx < line_count {
+    let line = lines[idx]
+    if !first {
+      result_buf.write_string("\n")
+    }
+    first = false
+    // Check if line starts with prefix
+    let mut has_prefix = true
+    if line.length() < prefix_len {
+      has_prefix = false
+    } else {
+      let mut j = 0
+      while j < prefix_len {
+        if line[j:j + 1] != prefix_str[j:j + 1] {
+          has_prefix = false
+          break
+        }
+        j = j + 1
+      }
+    }
+    if has_prefix {
+      // Remove prefix
+      if line.length() > prefix_len {
+        let view = line[prefix_len:]
+        result_buf.write_string(view.to_string())
+      }
+    } else if line.length() == 0 {
+      // Empty line is ok
+      ()
+    } else {
+      // Line doesn't have the required prefix - but if it's whitespace only, treat as empty
+      let mut is_ws = true
+      for c in line {
+        if !is_whitespace(c.to_string()) {
+          is_ws = false
+          break
+        }
+      }
+      if !is_ws {
+        return (
+          Err("Line does not have the required whitespace prefix"),
+          current,
+        )
+      }
+    }
+    idx = idx + 1
+  }
+  (Ok(String(result_buf.to_string())), current)
 }
 
 ///|
@@ -845,14 +995,32 @@ fn Lexer::next_token(self : Lexer) -> (Result[SpannedToken, String], Lexer) {
   match current.cursor.peek() {
     Some(ch) =>
       if ch == "\"" {
-        let (token_result, new_lexer) = current.read_string()
-        match token_result {
-          Ok(token) =>
-            (
-              Ok(SpannedToken::new(token, new_lexer.cursor.current_span(start))),
-              new_lexer,
-            )
-          Err(e) => (Err(e), new_lexer)
+        // Check for multiline string """
+        if current.cursor.peek_at(1) == Some("\"") &&
+          current.cursor.peek_at(2) == Some("\"") {
+          let (token_result, new_lexer) = current.read_multiline_string()
+          match token_result {
+            Ok(token) =>
+              (
+                Ok(
+                  SpannedToken::new(token, new_lexer.cursor.current_span(start)),
+                ),
+                new_lexer,
+              )
+            Err(e) => (Err(e), new_lexer)
+          }
+        } else {
+          let (token_result, new_lexer) = current.read_string()
+          match token_result {
+            Ok(token) =>
+              (
+                Ok(
+                  SpannedToken::new(token, new_lexer.cursor.current_span(start)),
+                ),
+                new_lexer,
+              )
+            Err(e) => (Err(e), new_lexer)
+          }
         }
       } else if ch == "r" &&
         (

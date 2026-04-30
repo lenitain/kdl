@@ -185,8 +185,22 @@ pub fn KdlEntry::new(value : KdlValue) -> KdlEntry {
 }
 
 ///|
+pub fn KdlEntry::with_ty(ty : KdlIdentifier?, value : KdlValue) -> KdlEntry {
+  { ty, value, name: None }
+}
+
+///|
 pub fn KdlEntry::new_prop(name : KdlIdentifier, value : KdlValue) -> KdlEntry {
   { ty: None, value, name: Some(name) }
+}
+
+///|
+pub fn KdlEntry::new_prop_with_ty(
+  ty : KdlIdentifier?,
+  name : KdlIdentifier,
+  value : KdlValue,
+) -> KdlEntry {
+  { ty, value, name: Some(name) }
 }
 
 ///|

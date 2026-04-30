@@ -6,9 +6,13 @@ import {
 }
 
 // Values
+pub fn detect_version(String) -> Int
+
 pub fn parse(String) -> Result[@kdl.KdlDocument, @kdl.KdlError]
 
 pub fn parse_v1(String) -> Result[@kdl.KdlDocument, @kdl.KdlError]
+
+pub fn parse_v2(String) -> Result[@kdl.KdlDocument, @kdl.KdlError]
 
 // Errors
 

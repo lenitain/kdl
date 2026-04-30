@@ -38,7 +38,9 @@ pub struct KdlEntry {
 pub fn KdlEntry::is_prop(Self) -> Bool
 pub fn KdlEntry::new(KdlValue) -> Self
 pub fn KdlEntry::new_prop(KdlIdentifier, KdlValue) -> Self
+pub fn KdlEntry::new_prop_with_ty(KdlIdentifier?, KdlIdentifier, KdlValue) -> Self
 pub fn KdlEntry::to_kdl_string(Self) -> String
+pub fn KdlEntry::with_ty(KdlIdentifier?, KdlValue) -> Self
 pub impl Show for KdlEntry
 
 pub struct KdlError {
