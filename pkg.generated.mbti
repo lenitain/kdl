@@ -1,0 +1,100 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "lenitain/kdl"
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct KdlDiagnostic {
+  input : String
+  span_start : Int
+  span_len : Int
+  message : String?
+  label : String?
+  help : String?
+  severity : KdlSeverity
+} derive(Eq)
+pub fn KdlDiagnostic::new(String, Int, Int, String?, String?, String?, KdlSeverity) -> Self
+pub impl Show for KdlDiagnostic
+
+pub struct KdlDocument {
+  nodes : Array[KdlNode]
+}
+pub fn KdlDocument::get(Self, String) -> KdlNode?
+pub fn KdlDocument::new() -> Self
+pub fn KdlDocument::nodes(Self) -> Array[KdlNode]
+pub fn KdlDocument::push(Self, KdlNode) -> Unit
+pub impl Eq for KdlDocument
+pub impl Show for KdlDocument
+
+pub struct KdlEntry {
+  ty : KdlIdentifier?
+  value : KdlValue
+  name : KdlIdentifier?
+} derive(Eq)
+pub fn KdlEntry::is_prop(Self) -> Bool
+pub fn KdlEntry::new(KdlValue) -> Self
+pub fn KdlEntry::new_prop(KdlIdentifier, KdlValue) -> Self
+pub impl Show for KdlEntry
+
+pub struct KdlError {
+  input : String
+  diagnostics : Array[KdlDiagnostic]
+} derive(Eq)
+pub fn KdlError::is_empty(Self) -> Bool
+pub fn KdlError::new(String) -> Self
+pub fn KdlError::push(Self, KdlDiagnostic) -> Unit
+pub impl Show for KdlError
+
+pub struct KdlIdentifier {
+  value : String
+  repr : String?
+} derive(Eq)
+pub fn KdlIdentifier::new(String) -> Self
+pub fn KdlIdentifier::repr(Self) -> String?
+pub fn KdlIdentifier::to_string(Self) -> String
+pub fn KdlIdentifier::value(Self) -> String
+pub fn KdlIdentifier::with_repr(String, String) -> Self
+pub impl Show for KdlIdentifier
+
+pub struct KdlNode {
+  ty : KdlIdentifier?
+  name : KdlIdentifier
+  entries : Array[KdlEntry]
+  children : Array[KdlNode]?
+}
+pub fn KdlNode::new(KdlIdentifier) -> Self
+pub fn KdlNode::with_children(KdlIdentifier, Array[Self]) -> Self
+pub impl Eq for KdlNode
+pub impl Show for KdlNode
+
+pub(all) enum KdlSeverity {
+  Error
+  Warning
+} derive(Eq)
+pub impl Show for KdlSeverity
+
+pub(all) enum KdlValue {
+  String(String)
+  Integer(Int64)
+  Float(Double)
+  Bool(Bool)
+  Null
+}
+pub fn KdlValue::as_bool(Self) -> Bool?
+pub fn KdlValue::as_float(Self) -> Double?
+pub fn KdlValue::as_integer(Self) -> Int64?
+pub fn KdlValue::as_string(Self) -> String?
+pub fn KdlValue::is_bool(Self) -> Bool
+pub fn KdlValue::is_float(Self) -> Bool
+pub fn KdlValue::is_integer(Self) -> Bool
+pub fn KdlValue::is_null(Self) -> Bool
+pub fn KdlValue::is_string(Self) -> Bool
+pub impl Eq for KdlValue
+pub impl Show for KdlValue
+
+// Type aliases
+
+// Traits
+

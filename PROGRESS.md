@@ -12,11 +12,11 @@
 - [x] 创建 `PROGRESS.md`
 
 ### Phase 1.1: KDL Value 类型系统
-- [ ] `KdlValue` 枚举: `String`, `Integer(i128)`, `Float(f64)`, `Bool`, `Null`
-- [ ] `KdlIdentifier`: 节点名/属性名/类型注解 (value + repr)
-- [ ] `KdlEntry`: Argument(位置参数) / Property(键值对)
-- [ ] `KdlNode`: 类型注解 + 名称 + entries + children
-- [ ] `KdlDocument`: 根文档 / 子节点块
+- [x] `KdlValue` 枚举: `String`, `Integer(Int64)`, `Float(Double)`, `Bool`, `Null`
+- [x] `KdlIdentifier`: 节点名/属性名/类型注解 (value + repr)
+- [x] `KdlEntry`: Argument(位置参数) / Property(键值对)
+- [x] `KdlNode`: 类型注解 + 名称 + entries + children
+- [x] `KdlDocument`: 根文档 / 子节点块
 
 ### Phase 1.2: 错误类型
 - [x] `KdlError` / `KdlDiagnostic`: 多错误收集, 源码位置
