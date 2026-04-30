@@ -427,13 +427,17 @@ fn SchemaParser::parse_validation(
 
 ///|
 fn SchemaParser::parse_prop(self : SchemaParser, node : KdlNode) -> SchemaProp {
-  let key = get_prop_string(node, "key")
+  let key = get_first_string(node)
   let description = get_prop_string(node, "description")
   let id = get_prop_string(node, "id")
   let ref_ = get_prop_string(node, "ref")
-  let required = match get_prop_bool(node, "required") {
-    Some(r) => r
-    None => false
+  let required = match find_child(node, "required") {
+    Some(req_node) => get_bool_value(req_node) == Some(true)
+    None =>
+      match get_prop_bool(node, "required") {
+        Some(r) => r
+        None => false
+      }
   }
   let validation = self.collect_child_validations(node)
   { key, description, id, ref_, required, validation }
@@ -447,8 +451,16 @@ fn SchemaParser::parse_value(
   let description = get_prop_string(node, "description")
   let id = get_prop_string(node, "id")
   let ref_ = get_prop_string(node, "ref")
-  let min = get_prop_int(node, "min")
-  let max = get_prop_int(node, "max")
+  let mut min : Int? = get_prop_int(node, "min")
+  let mut max : Int? = get_prop_int(node, "max")
+  for child in all_children(node) {
+    let cname = child.name.value()
+    match cname {
+      "min" => min = get_first_int(child)
+      "max" => max = get_first_int(child)
+      _ => ()
+    }
+  }
   let validation = self.collect_child_validations(node)
   { description, id, ref_, min, max, validation }
 }
@@ -498,12 +510,12 @@ fn SchemaParser::parse_children(
 
 ///|
 fn SchemaParser::parse_node(self : SchemaParser, node : KdlNode) -> SchemaNode {
-  let name = get_prop_string(node, "name")
+  let name = get_first_string(node)
   let description = get_prop_string(node, "description")
   let id = get_prop_string(node, "id")
   let ref_ = get_prop_string(node, "ref")
-  let min = get_prop_int(node, "min")
-  let max = get_prop_int(node, "max")
+  let mut min : Int? = get_prop_int(node, "min")
+  let mut max : Int? = get_prop_int(node, "max")
   let props : Array[SchemaProp] = []
   let values : Array[SchemaValue] = []
   let mut children : SchemaChildren? = None
@@ -523,6 +535,8 @@ fn SchemaParser::parse_node(self : SchemaParser, node : KdlNode) -> SchemaNode {
           None => true
         }
       "tag" => tag_val = Some(self.parse_validation(child))
+      "min" => min = get_first_int(child)
+      "max" => max = get_first_int(child)
       _ => ()
     }
   }
@@ -544,7 +558,7 @@ fn SchemaParser::parse_node(self : SchemaParser, node : KdlNode) -> SchemaNode {
 
 ///|
 fn SchemaParser::parse_tag(self : SchemaParser, node : KdlNode) -> SchemaTag {
-  let name = get_prop_string(node, "name")
+  let name = get_first_string(node)
   let description = get_prop_string(node, "description")
   let id = get_prop_string(node, "id")
   let ref_ = get_prop_string(node, "ref")
@@ -562,12 +576,30 @@ fn SchemaParser::parse_tag(self : SchemaParser, node : KdlNode) -> SchemaTag {
 
 ///|
 fn SchemaParser::parse_info(_self : SchemaParser, node : KdlNode) -> SchemaInfo {
-  let title = get_prop_string(node, "title")
-  let description = get_prop_string(node, "description")
-  let version = get_prop_string(node, "version")
-  let author = get_prop_string(node, "author")
-  let license = get_prop_string(node, "license")
-  let url = get_prop_string(node, "url")
+  let title = match find_child(node, "title") {
+    Some(n) => get_first_string(n)
+    None => get_prop_string(node, "title")
+  }
+  let description = match find_child(node, "description") {
+    Some(n) => get_first_string(n)
+    None => get_prop_string(node, "description")
+  }
+  let version = match find_child(node, "version") {
+    Some(n) => get_first_string(n)
+    None => get_prop_string(node, "version")
+  }
+  let author = match find_child(node, "author") {
+    Some(n) => get_first_string(n)
+    None => get_prop_string(node, "author")
+  }
+  let license = match find_child(node, "license") {
+    Some(n) => get_first_string(n)
+    None => get_prop_string(node, "license")
+  }
+  let url = match find_child(node, "link") {
+    Some(n) => get_first_string(n)
+    None => get_prop_string(node, "url")
+  }
   { title, description, version, author, license, url }
 }
 
