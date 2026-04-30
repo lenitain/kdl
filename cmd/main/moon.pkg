@@ -1,0 +1,7 @@
+// import {
+//   "lenitain/kdl" @lib,
+// }
+
+options(
+  "is-main": true,
+)
