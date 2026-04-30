@@ -9,19 +9,19 @@ using @lenitain/kdl {
 
 ///|
 pub struct SchemaValidation {
-  type_constraint : String?
-  enum_values : Array[KdlValue]?
-  pattern : String?
-  min_length : Int?
-  max_length : Int?
-  format : String?
-  gt : Double?
-  gte : Double?
-  lt : Double?
-  lte : Double?
-  modulus_divisor : Double?
-  modulus_remainder : Double?
-  tag : SchemaValidation?
+  mut type_constraint : String?
+  mut enum_values : Array[KdlValue]?
+  mut pattern : String?
+  mut min_length : Int?
+  mut max_length : Int?
+  mut format : String?
+  mut gt : Double?
+  mut gte : Double?
+  mut lt : Double?
+  mut lte : Double?
+  mut modulus_divisor : Double?
+  mut modulus_remainder : Double?
+  mut tag : SchemaValidation?
 }
 
 ///|
@@ -390,23 +390,9 @@ fn SchemaParser::parse_validation(
   node : KdlNode,
 ) -> SchemaValidation {
   let name = node.name.value()
+  let v = empty_validation()
   match name {
-    "type" =>
-      {
-        type_constraint: get_first_string(node),
-        enum_values: None,
-        pattern: None,
-        min_length: None,
-        max_length: None,
-        format: None,
-        gt: None,
-        gte: None,
-        lt: None,
-        lte: None,
-        modulus_divisor: None,
-        modulus_remainder: None,
-        tag: None,
-      }
+    "type" => v.type_constraint = get_first_string(node)
     "enum" => {
       let values : Array[KdlValue] = []
       for entry in node.entries {
@@ -414,187 +400,28 @@ fn SchemaParser::parse_validation(
           values.push(entry.value)
         }
       }
-      let ev = if values.length() > 0 { Some(values) } else { None }
-      {
-        type_constraint: None,
-        enum_values: ev,
-        pattern: None,
-        min_length: None,
-        max_length: None,
-        format: None,
-        gt: None,
-        gte: None,
-        lt: None,
-        lte: None,
-        modulus_divisor: None,
-        modulus_remainder: None,
-        tag: None,
+      if values.length() > 0 {
+        v.enum_values = Some(values)
       }
     }
-    "pattern" =>
-      {
-        type_constraint: None,
-        enum_values: None,
-        pattern: get_first_string(node),
-        min_length: None,
-        max_length: None,
-        format: None,
-        gt: None,
-        gte: None,
-        lt: None,
-        lte: None,
-        modulus_divisor: None,
-        modulus_remainder: None,
-        tag: None,
-      }
-    "min-length" =>
-      {
-        type_constraint: None,
-        enum_values: None,
-        pattern: None,
-        min_length: get_first_int(node),
-        max_length: None,
-        format: None,
-        gt: None,
-        gte: None,
-        lt: None,
-        lte: None,
-        modulus_divisor: None,
-        modulus_remainder: None,
-        tag: None,
-      }
-    "max-length" =>
-      {
-        type_constraint: None,
-        enum_values: None,
-        pattern: None,
-        min_length: None,
-        max_length: get_first_int(node),
-        format: None,
-        gt: None,
-        gte: None,
-        lt: None,
-        lte: None,
-        modulus_divisor: None,
-        modulus_remainder: None,
-        tag: None,
-      }
-    "format" =>
-      {
-        type_constraint: None,
-        enum_values: None,
-        pattern: None,
-        min_length: None,
-        max_length: None,
-        format: get_first_string(node),
-        gt: None,
-        gte: None,
-        lt: None,
-        lte: None,
-        modulus_divisor: None,
-        modulus_remainder: None,
-        tag: None,
-      }
-    ">" =>
-      {
-        type_constraint: None,
-        enum_values: None,
-        pattern: None,
-        min_length: None,
-        max_length: None,
-        format: None,
-        gt: get_nth_double(node, 0),
-        gte: None,
-        lt: None,
-        lte: None,
-        modulus_divisor: None,
-        modulus_remainder: None,
-        tag: None,
-      }
-    ">=" =>
-      {
-        type_constraint: None,
-        enum_values: None,
-        pattern: None,
-        min_length: None,
-        max_length: None,
-        format: None,
-        gt: None,
-        gte: get_nth_double(node, 0),
-        lt: None,
-        lte: None,
-        modulus_divisor: None,
-        modulus_remainder: None,
-        tag: None,
-      }
-    "<" =>
-      {
-        type_constraint: None,
-        enum_values: None,
-        pattern: None,
-        min_length: None,
-        max_length: None,
-        format: None,
-        gt: None,
-        gte: None,
-        lt: get_nth_double(node, 0),
-        lte: None,
-        modulus_divisor: None,
-        modulus_remainder: None,
-        tag: None,
-      }
-    "<=" =>
-      {
-        type_constraint: None,
-        enum_values: None,
-        pattern: None,
-        min_length: None,
-        max_length: None,
-        format: None,
-        gt: None,
-        gte: None,
-        lt: None,
-        lte: get_nth_double(node, 0),
-        modulus_divisor: None,
-        modulus_remainder: None,
-        tag: None,
-      }
-    "%" =>
-      {
-        type_constraint: None,
-        enum_values: None,
-        pattern: None,
-        min_length: None,
-        max_length: None,
-        format: None,
-        gt: None,
-        gte: None,
-        lt: None,
-        lte: None,
-        modulus_divisor: get_nth_double(node, 0),
-        modulus_remainder: get_nth_double(node, 1),
-        tag: None,
-      }
-    "tag" =>
-      {
-        type_constraint: None,
-        enum_values: None,
-        pattern: None,
-        min_length: None,
-        max_length: None,
-        format: None,
-        gt: None,
-        gte: None,
-        lt: None,
-        lte: None,
-        modulus_divisor: None,
-        modulus_remainder: None,
-        tag: Some(self.collect_child_validations(node)),
-      }
+    "pattern" => v.pattern = get_first_string(node)
+    "min-length" => v.min_length = get_first_int(node)
+    "max-length" => v.max_length = get_first_int(node)
+    "format" => v.format = get_first_string(node)
+    ">" => v.gt = get_nth_double(node, 0)
+    ">=" => v.gte = get_nth_double(node, 0)
+    "<" => v.lt = get_nth_double(node, 0)
+    "<=" => v.lte = get_nth_double(node, 0)
+    "%" => {
+      v.modulus_divisor = get_nth_double(node, 0)
+      v.modulus_remainder = get_nth_double(node, 1)
+    }
+    "tag" => v.tag = Some(self.collect_child_validations(node))
     "node-names" | "tag-names" | "prop-names" =>
-      self.collect_child_validations(node)
-    _ => empty_validation()
+      return self.collect_child_validations(node)
+    _ => ()
   }
+  v
 }
 
 ///|

@@ -90,19 +90,19 @@ pub struct SchemaTag {
 pub impl Show for SchemaTag
 
 pub struct SchemaValidation {
-  type_constraint : String?
-  enum_values : Array[@kdl.KdlValue]?
-  pattern : String?
-  min_length : Int?
-  max_length : Int?
-  format : String?
-  gt : Double?
-  gte : Double?
-  lt : Double?
-  lte : Double?
-  modulus_divisor : Double?
-  modulus_remainder : Double?
-  tag : SchemaValidation?
+  mut type_constraint : String?
+  mut enum_values : Array[@kdl.KdlValue]?
+  mut pattern : String?
+  mut min_length : Int?
+  mut max_length : Int?
+  mut format : String?
+  mut gt : Double?
+  mut gte : Double?
+  mut lt : Double?
+  mut lte : Double?
+  mut modulus_divisor : Double?
+  mut modulus_remainder : Double?
+  mut tag : SchemaValidation?
 }
 pub impl Show for SchemaValidation
 
