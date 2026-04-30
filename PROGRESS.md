@@ -1,209 +1,209 @@
 # KDL MoonBit Library - Development Progress
 
-## 目标
-为 [MoonBit](https://moonbitlang.com) 实现完整 KDL 文档语言库。
-- 参考: [KDL Spec](https://github.com/kdl-org/kdl) (~/.cloned/kdl)
-- 参考: [kdl-rs](https://github.com/kdl-org/kdl-rs) (~/.cloned/kdl-rs) Rust 实现
+## Goal
+Implement a complete KDL document language library for [MoonBit](https://moonbitlang.com).
+- Reference: [KDL Spec](https://github.com/kdl-org/kdl) (~/.cloned/kdl)
+- Reference: [kdl-rs](https://github.com/kdl-org/kdl-rs) (~/.cloned/kdl-rs) Rust implementation
 
 ---
 
-## 目录结构规划
+## Directory Structure Plan
 
-参照 toml-parser 项目结构，最终目标：
+Referencing toml-parser project structure, final goal:
 
 ```
 kdl/
-├── kdl.mbt                              # 公开 API re-export
+├── kdl.mbt                              # Public API re-export
 ├── types.mbt                            # KdlValue, KdlIdentifier, KdlEntry, KdlNode, KdlDocument
 ├── error.mbt                            # KdlError, KdlDiagnostic, KdlSeverity
-├── format.mbt                           # KDL 序列化/格式化输出
-├── moon.mod.json                        # 模块配置
-├── moon.pkg                             # 包配置
+├── format.mbt                           # KDL serialization/formatting output
+├── moon.mod.json                        # Module config
+├── moon.pkg                             # Package config
 ├── LICENSE                              # Apache-2.0
-├── README.mbt.md                        # 带可执行示例的文档
-├── PROGRESS.md                          # 开发进度
+├── README.mbt.md                        # Documentation with executable examples
+├── PROGRESS.md                          # Development progress
 │
-├── internal/                            # 内部模块
-│   └── tokenize/                        # 词法分析
-│       ├── tokenize.mbt                 # 主 tokenizer 实现
-│       ├── token.mbt                    # Token 类型定义
-│       ├── lexer_test.mbt               # Lexer 单元测试
-│       ├── lexer_bug_test.mbt           # Lexer 回归测试
-│       └── moon.pkg.json                # Tokenizer 包配置
+├── internal/                            # Internal modules
+│   └── tokenize/                        # Lexical analysis
+│       ├── tokenize.mbt                 # Main tokenizer implementation
+│       ├── token.mbt                    # Token type definition
+│       ├── lexer_test.mbt               # Lexer unit tests
+│       ├── lexer_bug_test.mbt           # Lexer regression tests
+│       └── moon.pkg.json                # Tokenizer package config
 │
-├── parser/                              # 解析器
-│   ├── parser.mbt                       # v1/v2 解析逻辑
-│   ├── v1_compat.mbt                    # v1 兼容适配
-│   ├── parser_test.mbt                  # 解析器单元测试
-│   └── moon.pkg.json                    # Parser 包配置
+├── parser/                              # Parser
+│   ├── parser.mbt                       # v1/v2 parsing logic
+│   ├── v1_compat.mbt                    # v1 compatibility adapter
+│   ├── parser_test.mbt                  # Parser unit tests
+│   └── moon.pkg.json                    # Parser package config
 │
-├── query/                               # KQL 查询引擎 (Phase 6)
-│   ├── query.mbt                        # 查询执行
-│   ├── query_parser.mbt                 # KQL 选择器解析
-│   ├── query_test.mbt                   # 查询测试
-│   └── moon.pkg.json                    # Query 包配置
+├── query/                               # KQL query engine (Phase 6)
+│   ├── query.mbt                        # Query execution
+│   ├── query_parser.mbt                 # KQL selector parsing
+│   ├── query_test.mbt                   # Query tests
+│   └── moon.pkg.json                    # Query package config
 │
-├── schema/                              # Schema 验证 (Phase 7)
-│   ├── schema.mbt                       # Schema 定义与验证
-│   ├── schema_test.mbt                  # Schema 测试
-│   └── moon.pkg.json                    # Schema 包配置
+├── schema/                              # Schema validation (Phase 7)
+│   ├── schema.mbt                       # Schema definition and validation
+│   ├── schema_test.mbt                  # Schema tests
+│   └── moon.pkg.json                    # Schema package config
 │
-├── cmd/                                 # 命令行工具
-│   └── main/                            # CLI 演示
-│       ├── main.mbt                     # 交互式 KDL parser demo
-│       ├── main_test.mbt                # Demo 测试
-│       └── moon.pkg.json                # Main 包配置
+├── cmd/                                 # Command line tools
+│   └── main/                            # CLI demo
+│       ├── main.mbt                     # Interactive KDL parser demo
+│       ├── main_test.mbt                # Demo tests
+│       └── moon.pkg.json                # Main package config
 │
-├── 测试套件 (目标 5000+ 行)
-│   ├── kdl_test.mbt                     # 核心类型测试
-│   ├── kdl_wbtest.mbt                   # 白盒测试
-│   ├── parser_test.mbt                  # 解析器测试
-│   ├── parser_v1_test.mbt               # KDL v1 解析测试
-│   ├── parser_v2_test.mbt               # KDL v2 解析测试
-│   ├── format_test.mbt                  # 序列化测试
-│   ├── official_kdl_test_suite_test.mbt # 官方 KDL 规范合规测试
-│   ├── comprehensive_test.mbt           # 复杂真实场景测试
-│   ├── coverage_test.mbt                # 覆盖率增强测试
-│   └── special_value_test.mbt           # 特殊值 (inf, nan, #null) 测试
+├── test suite (target 5000+ lines)
+│   ├── kdl_test.mbt                     # Core type tests
+│   ├── kdl_wbtest.mbt                   # White box tests
+│   ├── parser_test.mbt                  # Parser tests
+│   ├── parser_v1_test.mbt               # KDL v1 parsing tests
+│   ├── parser_v2_test.mbt               # KDL v2 parsing tests
+│   ├── format_test.mbt                  # Serialization tests
+│   ├── official_kdl_test_suite_test.mbt # Official KDL spec compliance tests
+│   ├── comprehensive_test.mbt           # Complex real-world scenario tests
+│   ├── coverage_test.mbt                # Coverage enhancement tests
+│   └── special_value_test.mbt           # Special value (inf, nan, #null) tests
 │
-└── target/                              # 构建产物 (生成)
-    ├── wasm-gc/                          # WebAssembly 输出
-    └── packages.json                     # 包依赖信息
+└── target/                              # Build artifacts (generated)
+    ├── wasm-gc/                          # WebAssembly output
+    └── packages.json                     # Package dependency info
 ```
 
-### 迁移计划
+### Migration Plan
 
-从当前扁平结构迁移到目标结构：
+Migrate from current flat structure to target structure:
 
-| 阶段 | 操作 | 当前状态 |
-|------|------|----------|
-| Phase 1 | `types.mbt`, `error.mbt` 保留在根目录 | ✅ 已完成 |
-| Phase 2 | 创建 `internal/tokenize/` 子包 | ✅ 已完成 |
-| Phase 3 | 创建 `parser/` 子包 | ⏳ 待开始 |
-| Phase 5 | 创建 `format.mbt` (根目录) | ⏳ 待开始 |
-| Phase 6 | 创建 `query/` 子包 | ⏳ 待开始 |
-| Phase 7 | 创建 `schema/` 子包 | ⏳ 待开始 |
-| Phase 8 | 创建 `cmd/main/` CLI 工具 | ⏳ 待开始 |
+| Phase | Operation | Current Status |
+|-------|-----------|----------------|
+| Phase 1 | Keep `types.mbt`, `error.mbt` in root directory | ✅ Completed |
+| Phase 2 | Create `internal/tokenize/` subpackage | ✅ Completed |
+| Phase 3 | Create `parser/` subpackage | ⏳ Pending |
+| Phase 5 | Create `format.mbt` (root directory) | ⏳ Pending |
+| Phase 6 | Create `query/` subpackage | ⏳ Pending |
+| Phase 7 | Create `schema/` subpackage | ⏳ Pending |
+| Phase 8 | Create `cmd/main/` CLI tool | ⏳ Pending |
 
 ---
 
-## Phase 1: 核心数据类型 ✅ 已完成
-- [x] 规划项目结构
-- [x] 创建 `PROGRESS.md`
+## Phase 1: Core Data Types ✅ Completed
+- [x] Plan project structure
+- [x] Create `PROGRESS.md`
 
-### Phase 1.1: KDL Value 类型系统
-- [x] `KdlValue` 枚举: `String`, `Integer(Int64)`, `Float(Double)`, `Bool`, `Null`
-- [x] `KdlIdentifier`: 节点名/属性名/类型注解 (value + repr)
-- [x] `KdlEntry`: Argument(位置参数) / Property(键值对)
-- [x] `KdlNode`: 类型注解 + 名称 + entries + children
-- [x] `KdlDocument`: 根文档 / 子节点块
+### Phase 1.1: KDL Value Type System
+- [x] `KdlValue` enum: `String`, `Integer(Int64)`, `Float(Double)`, `Bool`, `Null`
+- [x] `KdlIdentifier`: Node name/property name/type annotation (value + repr)
+- [x] `KdlEntry`: Argument (positional) / Property (key-value pair)
+- [x] `KdlNode`: Type annotation + name + entries + children
+- [x] `KdlDocument`: Root document / child node block
 
-### Phase 1.2: 错误类型
-- [x] `KdlError` / `KdlDiagnostic`: 多错误收集, 源码位置
+### Phase 1.2: Error Types
+- [x] `KdlError` / `KdlDiagnostic`: Multiple error collection, source position
 
-## Phase 2: Tokenizer / Lexer ✅ 已完成
-- [x] 创建 `internal/tokenize/` 子包 (token.mbt + tokenize.mbt + moon.pkg.json)
-- [x] Token 类型设计: `KdlToken` 枚举 (Ident, String, Integer, Float, Bool, Null, Inf, NegInf, Nan, LBrace, RBrace, LParen, RParen, Eq, Slashdash, Semicolon, Newline, Eof)
-- [x] 基本的字符流处理 (Cursor/SourcePosition)
-- [x] 空白/换行处理
-- [x] 注释处理: `//`, `/* */` (可嵌套)
-- [x] Slashdash `/-` 注释
-- [x] 行继续符 `\` + 换行
-- [x] 禁止字符检测 (NUL, 控制字符, BIDI, BOM 处理)
-- [x] Lexer 单元测试 (66 tests, 59 passed, 7 failed - 数值解析待实现)
+## Phase 2: Tokenizer / Lexer ✅ Completed
+- [x] Create `internal/tokenize/` subpackage (token.mbt + tokenize.mbt + moon.pkg.json)
+- [x] Token type design: `KdlToken` enum (Ident, String, Integer, Float, Bool, Null, Inf, NegInf, Nan, LBrace, RBrace, LParen, RParen, Eq, Slashdash, Semicolon, Newline, Eof)
+- [x] Basic character stream processing (Cursor/SourcePosition)
+- [x] Whitespace/newline handling
+- [x] Comment handling: `//`, `/* */` (nestable)
+- [x] Slashdash `/-` comments
+- [x] Line continuation `\` + newline
+- [x] Disallowed character detection (NUL, control characters, BIDI, BOM handling)
+- [x] Lexer unit tests (66 tests, 59 passed, 7 failed - number parsing to be implemented)
 
-## Phase 3: Parser — v1 支持
-- [ ] 创建 `parser/` 子包 (parser.mbt + moon.pkg.json)
-- [ ] 裸标识符解析 (bare identifier)
-- [ ] 数值解析: 十进制/十六进制/八进制/二进制 (含`_`分隔符)
-- [ ] 引号字符串解析: 转义序列 `\n`, `\t`, `\\`, `\"`, `\/`, `\b`, `\f`, `\u{...}`
-- [ ] 原始字符串解析 `r"..."#`, `r##"..."##`
-- [ ] 布尔值: `true`/`false`
+## Phase 3: Parser — v1 Support
+- [ ] Create `parser/` subpackage (parser.mbt + moon.pkg.json)
+- [ ] Bare identifier parsing
+- [ ] Number parsing: decimal/hexadecimal/octal/binary (with `_` separator)
+- [ ] Quoted string parsing: escape sequences `\n`, `\t`, `\\`, `\"`, `\/`, `\b`, `\f`, `\u{...}`
+- [ ] Raw string parsing `r"..."#`, `r##"..."##`
+- [ ] Boolean: `true`/`false`
 - [ ] Null: `null`
-- [ ] 类型注解: `(bare-id)`
-- [ ] 节点解析: 名称 + entries + children `{}`
-- [ ] 文档解析: 版本标记 `/kdl-version 1`
-- [ ] 一个完整 KDL v1 文档的端到端解析
+- [ ] Type annotation: `(bare-id)`
+- [ ] Node parsing: name + entries + children `{}`
+- [ ] Document parsing: version marker `/kdl-version 1`
+- [ ] End-to-end parsing of a complete KDL v1 document
 
-## Phase 4: Parser — v2 支持
-- [ ] 标识符字符串 (bare word)
-- [ ] 多行字符串 `"""..."""`
-- [ ] 新转义: `\s`, 转义空白
-- [ ] 关键字数字: `#inf`, `#-inf`, `#nan`
+## Phase 4: Parser — v2 Support
+- [ ] Identifier string (bare word)
+- [ ] Multiline string `"""..."""`
+- [ ] New escape: `\s`, escaped whitespace
+- [ ] Keyword numbers: `#inf`, `#-inf`, `#nan`
 - [ ] `#true`/`#false`/`#null`
-- [ ] 类型注解支持字符串: `(string)` 含内部空白
-- [ ] 节点名/属性键支持任意字符串类型
-- [ ] Slashdash 支持子节点块
-- [ ] 版本标记 `/kdl-version 2`
-- [ ] 完整的 KDL v2 文档解析
+- [ ] Type annotation supports strings: `(string)` with internal whitespace
+- [ ] Node name/property key supports arbitrary string types
+- [ ] Slashdash supports child node blocks
+- [ ] Version marker `/kdl-version 2`
+- [ ] Complete KDL v2 document parsing
 
-### v1/v2 兼容
-- [ ] 启发式检测 v1/v2 文档
-- [ ] 统一内部表示 (v1 值转换为 v2 表示)
+### v1/v2 Compatibility
+- [ ] Heuristic detection of v1/v2 documents
+- [ ] Unified internal representation (v1 values converted to v2 representation)
 
-## Phase 5: 序列化 (KDL 输出)
-- [ ] `KdlDocument.to_string()` / `show()` — 基本序列化
-- [ ] 值的格式化输出
-- [ ] 带缩进的序列化
-- [ ] 可选格式化配置 (缩进大小等)
+## Phase 5: Serialization (KDL Output)
+- [ ] `KdlDocument.to_string()` / `show()` — basic serialization
+- [ ] Formatted output of values
+- [ ] Serialization with indentation
+- [ ] Optional formatting configuration (indent size, etc.)
 
-## Phase 6: 查询 (KQL)
-- [ ] 创建 `query/` 子包
+## Phase 6: Query (KQL)
+- [ ] Create `query/` subpackage
 - [ ] KQL Tokenizer
-- [ ] KQL Parser (选择器 + 匹配器)
-- [ ] 文档查询引擎: 子代, 后代, 兄弟选择器
-- [ ] 值/属性/类型匹配与比较
+- [ ] KQL Parser (selector + matcher)
+- [ ] Document query engine: child, descendant, sibling selectors
+- [ ] Value/property/type matching and comparison
 
-## Phase 7: Schema 支持
-- [ ] 创建 `schema/` 子包
-- [ ] Schema 文档解析
-- [ ] 节点定义验证
-- [ ] 属性/值校验
-- [ ] 类型检查
+## Phase 7: Schema Support
+- [ ] Create `schema/` subpackage
+- [ ] Schema document parsing
+- [ ] Node definition validation
+- [ ] Property/value validation
+- [ ] Type checking
 
-## Phase 8: 工具与完善
+## Phase 8: Tools and Polish
 - [ ] Autoformat
-- [ ] 创建 `cmd/main/` CLI 工具 (parse, check, format)
-- [ ] 完整文档 (README.mbt.md)
-- [ ] MoonBit 包发布
+- [ ] Create `cmd/main/` CLI tool (parse, check, format)
+- [ ] Complete documentation (README.mbt.md)
+- [ ] MoonBit package publication
 
 ---
 
-## 状态键
-- `✅ 已完成` — 工作完成
-- `🔄 进行中` — 当前工作
-- `⏳ 待开始` — 尚未开始
-- `⬜ 需要调研` — 需要进一步调研
+## Status Key
+- `✅ Completed` — Work completed
+- `🔄 In Progress` — Current work
+- `⏳ Pending` — Not yet started
+- `⬜ Needs Research` — Requires further investigation
 
-## 设计原则
-1. **先解析, 后格式化** — 不追求 round-trip 精确 (区别于 kdl-rs), 先用简单数据模型
-2. **轻量依赖** — 零外部依赖, 纯 MoonBit 标准库
-3. **v2 优先, 兼容 v1** — 主解析器面向 v2, v1 输入经适配后统一表示
-4. **错误弹性** — 遇到错误尽量继续解析收集多个诊断
-5. **MoonBit 惯用风格** — 使用 MoonBit 的 error handling, enum, Result 等
-6. **模块化子包** — tokenizer/parser/query/schema 各自独立子包, 类似 toml-parser 结构
+## Design Principles
+1. **Parse first, format later** — Don't pursue round-trip precision (unlike kdl-rs), use simple data model first
+2. **Lightweight dependencies** — Zero external dependencies, pure MoonBit standard library
+3. **v2 first, compatible with v1** — Main parser targets v2, v1 input adapted to unified representation
+4. **Error resilience** — Continue parsing on errors to collect multiple diagnostics
+5. **MoonBit idiomatic style** — Use MoonBit's error handling, enum, Result, etc.
+6. **Modular subpackages** — tokenizer/parser/query/schema each independent subpackages, similar to toml-parser structure
 
-## 当前文件结构
+## Current File Structure
 ```
 kdl/
-├── kdl.mbt              — 公开 API (待补充 re-export)
+├── kdl.mbt              — Public API (pending re-export)
 ├── types.mbt            — KdlValue, KdlIdentifier, KdlEntry, KdlNode, KdlDocument ✅
 ├── error.mbt            — KdlError, KdlDiagnostic, KdlSeverity ✅
-├── kdl_test.mbt         — 黑盒测试 (35 tests) ✅
-├── kdl_wbtest.mbt       — 白盒测试
-├── moon.mod.json        — 模块: lenitain/kdl
-├── moon.pkg             — 包配置
-├── PROGRESS.md          — 本文件
+├── kdl_test.mbt         — Black box tests (35 tests) ✅
+├── kdl_wbtest.mbt       — White box tests
+├── moon.mod.json        — Module: lenitain/kdl
+├── moon.pkg             — Package config
+├── PROGRESS.md          — This file
 │
-├── internal/                            — 内部模块
-│   └── tokenize/                        — 词法分析 ✅
-│       ├── token.mbt                    — Token 类型定义 ✅
-│       ├── tokenize.mbt                 — 主 tokenizer 实现 ✅
-│       ├── lexer_test.mbt               — Lexer 单元测试 (66 tests) ✅
-│       └── moon.pkg.json                — Tokenizer 包配置 ✅
+├── internal/                            — Internal modules
+│   └── tokenize/                        — Lexical analysis ✅
+│       ├── token.mbt                    — Token type definition ✅
+│       ├── tokenize.mbt                 — Main tokenizer implementation ✅
+│       ├── lexer_test.mbt               — Lexer unit tests (66 tests) ✅
+│       └── moon.pkg.json                — Tokenizer package config ✅
 │
-└── 测试套件
-    ├── kdl_test.mbt                     — 核心类型测试 (35 tests) ✅
-    ├── kdl_wbtest.mbt                   — 白盒测试
-    └── internal/tokenize/lexer_test.mbt — Lexer 单元测试 (66 tests) ✅
+└── test suite
+    ├── kdl_test.mbt                     — Core type tests (35 tests) ✅
+    ├── kdl_wbtest.mbt                   — White box tests
+    └── internal/tokenize/lexer_test.mbt — Lexer unit tests (66 tests) ✅
 ```
