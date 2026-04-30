@@ -1,0 +1,122 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "lenitain/kdl/schema"
+
+import {
+  "lenitain/kdl",
+}
+
+// Values
+pub fn parse_schema(@kdl.KdlDocument) -> Result[SchemaDocument, @kdl.KdlError]
+
+// Errors
+
+// Types and methods
+pub struct SchemaChildren {
+  description : String?
+  id : String?
+  ref_ : String?
+  nodes : Array[SchemaNode]
+  node_names_validation : SchemaValidation?
+  other_nodes_allowed : Bool
+}
+pub impl Show for SchemaChildren
+
+pub struct SchemaDefinitions {
+  nodes : Array[SchemaNode]
+  props : Array[SchemaProp]
+  values : Array[SchemaValue]
+  children : Array[SchemaChildren]
+  tags : Array[SchemaTag]
+}
+pub impl Show for SchemaDefinitions
+
+pub struct SchemaDocument {
+  info : SchemaInfo
+  nodes : Array[SchemaNode]
+  tags : Array[SchemaTag]
+  definitions : SchemaDefinitions
+  node_names_validation : SchemaValidation?
+  other_nodes_allowed : Bool
+  tag_names_validation : SchemaValidation?
+  other_tags_allowed : Bool
+}
+pub impl Show for SchemaDocument
+
+pub struct SchemaInfo {
+  title : String?
+  description : String?
+  version : String?
+  author : String?
+  license : String?
+  url : String?
+}
+pub impl Show for SchemaInfo
+
+pub struct SchemaNode {
+  name : String?
+  description : String?
+  id : String?
+  ref_ : String?
+  min : Int?
+  max : Int?
+  props : Array[SchemaProp]
+  values : Array[SchemaValue]
+  children : SchemaChildren?
+  prop_names_validation : SchemaValidation?
+  other_props_allowed : Bool
+  tag_validation : SchemaValidation?
+}
+pub impl Show for SchemaNode
+
+pub struct SchemaProp {
+  key : String?
+  description : String?
+  id : String?
+  ref_ : String?
+  required : Bool
+  validation : SchemaValidation
+}
+pub impl Show for SchemaProp
+
+pub struct SchemaTag {
+  name : String?
+  description : String?
+  id : String?
+  ref_ : String?
+  nodes : Array[SchemaNode]
+  node_names_validation : SchemaValidation?
+  other_nodes_allowed : Bool
+}
+pub impl Show for SchemaTag
+
+pub struct SchemaValidation {
+  type_constraint : String?
+  enum_values : Array[@kdl.KdlValue]?
+  pattern : String?
+  min_length : Int?
+  max_length : Int?
+  format : String?
+  gt : Double?
+  gte : Double?
+  lt : Double?
+  lte : Double?
+  modulus_divisor : Double?
+  modulus_remainder : Double?
+  tag : SchemaValidation?
+}
+pub impl Show for SchemaValidation
+
+pub struct SchemaValue {
+  description : String?
+  id : String?
+  ref_ : String?
+  min : Int?
+  max : Int?
+  validation : SchemaValidation
+}
+pub impl Show for SchemaValue
+
+// Type aliases
+
+// Traits
+
