@@ -66,7 +66,7 @@ Migrate from current flat structure to target structure:
 | Phase 1 | Keep `types.mbt`, `error.mbt` in root directory | ✅ Completed |
 | Phase 2 | Create `internal/tokenize/` subpackage | ✅ Completed |
 | Phase 3 | Create `parser/` subpackage | ✅ Completed |
-| Phase 5 | Create `format.mbt` (root directory) | ⏳ Pending |
+| Phase 5 | Create `format.mbt` (root directory) | ✅ Completed |
 | Phase 6 | Create `query/` subpackage | ⏳ Pending |
 | Phase 7 | Create `schema/` subpackage | ⏳ Pending |
 | Phase 8 | Create `cmd/main/` CLI tool | ⏳ Pending |
@@ -127,11 +127,11 @@ Migrate from current flat structure to target structure:
 - [ ] Heuristic detection of v1/v2 documents
 - [ ] Unified internal representation (v1 values converted to v2 representation)
 
-## Phase 5: Serialization (KDL Output)
-- [ ] `KdlDocument.to_string()` / `show()` — basic serialization
-- [ ] Formatted output of values
-- [ ] Serialization with indentation
-- [ ] Optional formatting configuration (indent size, etc.)
+## Phase 5: Serialization (KDL Output) ✅ Completed
+- [x] `KdlDocument.to_string()` / `show()` — basic serialization
+- [x] Formatted output of values
+- [x] Serialization with indentation
+- [x] Optional formatting configuration (indent size, etc.)
 
 ## Phase 6: Query (KQL)
 - [ ] Create `query/` subpackage
