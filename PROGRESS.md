@@ -175,6 +175,8 @@ kdl/
 ├── kdl.mbt              — Public API (pending re-export)
 ├── types.mbt            — KdlValue, KdlIdentifier, KdlEntry, KdlNode, KdlDocument ✅
 ├── error.mbt            — KdlError, KdlDiagnostic, KdlSeverity ✅
+├── format.mbt           — KDL serialization/formatting output ✅
+├── format_test.mbt      — Format tests (27 tests) ✅
 ├── kdl_test.mbt         — Root package blackbox tests (35 tests) ✅
 ├── kdl_wbtest.mbt       — Root package whitebox tests
 ├── moon.mod.json        — Module: lenitain/kdl
